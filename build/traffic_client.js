@@ -13,6 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.TrafficClient = void 0;
 var WebSocket = require("ws");
 var StratuxAddress = "192.168.10.1";
 var SecondsToRunTrafficGarbageCollection = 5;
@@ -30,6 +31,8 @@ var transponderCodeKey = "Squawk";
 var distanceKey = "Distance";
 var altitudeKey = "Alt";
 var bearingKey = "Bearing";
+var trackKey = "Track";
+var speedKey = "Speed";
 var secondsSinceLastReportKey = "secondsSinceLastReport";
 var displayNameKey = "displayName";
 var unknownDisplayName = "UNKNOWN";
@@ -334,6 +337,12 @@ var TrafficClient = /** @class */ (function () {
                 outReliableTraffic[icaoCode][distanceKey] = trafficCache[icaoCode][distanceKey];
                 outReliableTraffic[icaoCode][altitudeKey] = trafficCache[icaoCode][altitudeKey];
                 outReliableTraffic[icaoCode][bearingKey] = trafficCache[icaoCode][bearingKey];
+                if (trackKey in trafficCache[icaoCode]) {
+                    outReliableTraffic[icaoCode][trackKey] = trafficCache[icaoCode][trackKey];
+                }
+                if (speedKey in trafficCache[icaoCode]) {
+                    outReliableTraffic[icaoCode][speedKey] = trafficCache[icaoCode][speedKey];
+                }
             }
         });
         return outReliableTraffic;

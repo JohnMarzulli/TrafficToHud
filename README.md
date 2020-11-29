@@ -30,6 +30,7 @@ npm install
 
 ### Revision History
 
-Date       | Version   | Major Changes
----------- | --------- | ------------------
-2020-04-24 | 1.0 Alpha | Moved to own Repo.
+| Date       | Version   | Major Changes                                                        |
+| ---------- | --------- | -------------------------------------------------------------------- |
+| 2020-11-27 | 1.2       | Added new optional fields to support StratuxHUD v2. Package updates. |
+| 2020-04-24 | 1.0 Alpha | Moved to own Repo.                                                   |
