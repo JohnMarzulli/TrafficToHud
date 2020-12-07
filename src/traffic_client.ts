@@ -17,6 +17,8 @@ const transponderCodeKey: string = "Squawk";
 const distanceKey: string = "Distance";
 const altitudeKey: string = "Alt";
 const bearingKey: string = "Bearing";
+const trackKey: string = "Track";
+const speedKey: string = "Speed";
 
 const secondsSinceLastReportKey: string = "secondsSinceLastReport";
 const displayNameKey: string = "displayName";
@@ -382,6 +384,14 @@ export class TrafficClient {
         outReliableTraffic[icaoCode][distanceKey] = trafficCache[icaoCode][distanceKey];
         outReliableTraffic[icaoCode][altitudeKey] = trafficCache[icaoCode][altitudeKey];
         outReliableTraffic[icaoCode][bearingKey] = trafficCache[icaoCode][bearingKey];
+
+        if (trackKey in trafficCache[icaoCode]) {
+          outReliableTraffic[icaoCode][trackKey] = trafficCache[icaoCode][trackKey];
+        }
+
+        if (speedKey in trafficCache[icaoCode]) {
+          outReliableTraffic[icaoCode][speedKey] = trafficCache[icaoCode][speedKey];
+        }
       }
     });
 
