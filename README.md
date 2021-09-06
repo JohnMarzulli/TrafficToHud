@@ -24,9 +24,23 @@ If you are using the default release image, then no additional work is required.
 
 These installation steps are intended for developers or those who wish to install from scratch.
 
-```
+```bash
 npm install
 ```
+
+If you wish to run the service at startup:
+
+```bash
+crontab -e
+```
+
+Insert the following line:
+
+```bash
+@reboot nodejs       /home/pi/TrafficToHud/build/traffic_manager.js &
+```
+
+Save and close.
 
 ### Revision History
 
