@@ -33,6 +33,7 @@ var altitudeKey = "Alt";
 var bearingKey = "Bearing";
 var trackKey = "Track";
 var speedKey = "Speed";
+var gnsDeltaKey = "GnssDiffFromBaroAlt";
 var secondsSinceLastReportKey = "secondsSinceLastReport";
 var displayNameKey = "displayName";
 var unknownDisplayName = "UNKNOWN";
@@ -159,7 +160,7 @@ function reportTraffic(report) {
             console.log(Date.now().toLocaleString() + ": Adding " + icaoAddress);
         }
         else {
-            // Now go an perform the painful merge
+            // Now go and perform the painful merge
             Object.keys(report).forEach(function (key) {
                 trafficCache[icaoAddress][key] = report[key];
             });
@@ -328,20 +329,30 @@ var TrafficClient = /** @class */ (function () {
         Object.keys(trafficCache).forEach(function (icaoCode) {
             if (isReliableTraffic(trafficCache[icaoCode])) {
                 var displayValue = getDisplayName(trafficCache[icaoCode]);
-                outReliableTraffic[icaoCode] = new Map();
-                outReliableTraffic[icaoCode][displayNameKey] = displayValue;
-                outReliableTraffic[icaoCode][secondsSinceLastReportKey] = trafficCache[icaoCode][secondsSinceLastReportKey];
-                outReliableTraffic[icaoCode][latitudeKey] = trafficCache[icaoCode][latitudeKey];
-                outReliableTraffic[icaoCode][longitudeKey] = trafficCache[icaoCode][longitudeKey];
-                outReliableTraffic[icaoCode][onGroundKey] = trafficCache[icaoCode][onGroundKey];
-                outReliableTraffic[icaoCode][distanceKey] = trafficCache[icaoCode][distanceKey];
-                outReliableTraffic[icaoCode][altitudeKey] = trafficCache[icaoCode][altitudeKey];
-                outReliableTraffic[icaoCode][bearingKey] = trafficCache[icaoCode][bearingKey];
-                if (trackKey in trafficCache[icaoCode]) {
-                    outReliableTraffic[icaoCode][trackKey] = trafficCache[icaoCode][trackKey];
-                }
-                if (speedKey in trafficCache[icaoCode]) {
-                    outReliableTraffic[icaoCode][speedKey] = trafficCache[icaoCode][speedKey];
+                var gnsDelta = 0;
+                var sourceTraffic = trafficCache[icaoCode];
+                if (sourceTraffic != undefined && sourceTraffic != null) {
+                    if (gnsDeltaKey in sourceTraffic) {
+                        var sourceTrafficGns = sourceTraffic[gnsDeltaKey];
+                        if (sourceTrafficGns != undefined && sourceTrafficGns != null) {
+                            gnsDelta = sourceTrafficGns;
+                        }
+                    }
+                    outReliableTraffic[icaoCode] = new Map();
+                    outReliableTraffic[icaoCode][displayNameKey] = displayValue;
+                    outReliableTraffic[icaoCode][secondsSinceLastReportKey] = sourceTraffic[secondsSinceLastReportKey];
+                    outReliableTraffic[icaoCode][latitudeKey] = sourceTraffic[latitudeKey];
+                    outReliableTraffic[icaoCode][longitudeKey] = sourceTraffic[longitudeKey];
+                    outReliableTraffic[icaoCode][onGroundKey] = sourceTraffic[onGroundKey];
+                    outReliableTraffic[icaoCode][distanceKey] = sourceTraffic[distanceKey];
+                    outReliableTraffic[icaoCode][altitudeKey] = sourceTraffic[altitudeKey] - gnsDelta;
+                    outReliableTraffic[icaoCode][bearingKey] = sourceTraffic[bearingKey];
+                    if (trackKey in sourceTraffic) {
+                        outReliableTraffic[icaoCode][trackKey] = sourceTraffic[trackKey];
+                    }
+                    if (speedKey in sourceTraffic) {
+                        outReliableTraffic[icaoCode][speedKey] = sourceTraffic[speedKey];
+                    }
                 }
             }
         });

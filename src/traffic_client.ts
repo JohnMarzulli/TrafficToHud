@@ -19,6 +19,7 @@ const altitudeKey: string = "Alt";
 const bearingKey: string = "Bearing";
 const trackKey: string = "Track";
 const speedKey: string = "Speed";
+const gnsDeltaKey: string = "GnssDiffFromBaroAlt";
 
 const secondsSinceLastReportKey: string = "secondsSinceLastReport";
 const displayNameKey: string = "displayName";
@@ -178,7 +179,7 @@ function reportTraffic(
       trafficCache[icaoAddress] = report;
       console.log(`${Date.now().toLocaleString()}: Adding ${icaoAddress}`);
     } else {
-      // Now go an perform the painful merge
+      // Now go and perform the painful merge
       Object.keys(report).forEach(key => {
         trafficCache[icaoAddress][key] = report[key];
       });
@@ -374,23 +375,37 @@ export class TrafficClient {
     Object.keys(trafficCache).forEach(icaoCode => {
       if (isReliableTraffic(trafficCache[icaoCode])) {
         var displayValue: string = getDisplayName(trafficCache[icaoCode]);
+        var gnsDelta = 0;
 
-        outReliableTraffic[icaoCode] = new Map<string, JsonPackage>();
-        outReliableTraffic[icaoCode][displayNameKey] = displayValue;
-        outReliableTraffic[icaoCode][secondsSinceLastReportKey] = trafficCache[icaoCode][secondsSinceLastReportKey];
-        outReliableTraffic[icaoCode][latitudeKey] = trafficCache[icaoCode][latitudeKey];
-        outReliableTraffic[icaoCode][longitudeKey] = trafficCache[icaoCode][longitudeKey];
-        outReliableTraffic[icaoCode][onGroundKey] = trafficCache[icaoCode][onGroundKey];
-        outReliableTraffic[icaoCode][distanceKey] = trafficCache[icaoCode][distanceKey];
-        outReliableTraffic[icaoCode][altitudeKey] = trafficCache[icaoCode][altitudeKey];
-        outReliableTraffic[icaoCode][bearingKey] = trafficCache[icaoCode][bearingKey];
+        var sourceTraffic = trafficCache[icaoCode];
 
-        if (trackKey in trafficCache[icaoCode]) {
-          outReliableTraffic[icaoCode][trackKey] = trafficCache[icaoCode][trackKey];
-        }
+        if (sourceTraffic != undefined && sourceTraffic != null) {
 
-        if (speedKey in trafficCache[icaoCode]) {
-          outReliableTraffic[icaoCode][speedKey] = trafficCache[icaoCode][speedKey];
+          if (gnsDeltaKey in sourceTraffic) {
+            var sourceTrafficGns = sourceTraffic[gnsDeltaKey];
+
+            if (sourceTrafficGns != undefined && sourceTrafficGns != null) {
+              gnsDelta = sourceTrafficGns;
+            }
+          }
+
+          outReliableTraffic[icaoCode] = new Map<string, JsonPackage>();
+          outReliableTraffic[icaoCode][displayNameKey] = displayValue;
+          outReliableTraffic[icaoCode][secondsSinceLastReportKey] = sourceTraffic[secondsSinceLastReportKey];
+          outReliableTraffic[icaoCode][latitudeKey] = sourceTraffic[latitudeKey];
+          outReliableTraffic[icaoCode][longitudeKey] = sourceTraffic[longitudeKey];
+          outReliableTraffic[icaoCode][onGroundKey] = sourceTraffic[onGroundKey];
+          outReliableTraffic[icaoCode][distanceKey] = sourceTraffic[distanceKey];
+          outReliableTraffic[icaoCode][altitudeKey] = sourceTraffic[altitudeKey] - gnsDelta;
+          outReliableTraffic[icaoCode][bearingKey] = sourceTraffic[bearingKey];
+
+          if (trackKey in sourceTraffic) {
+            outReliableTraffic[icaoCode][trackKey] = sourceTraffic[trackKey];
+          }
+
+          if (speedKey in sourceTraffic) {
+            outReliableTraffic[icaoCode][speedKey] = sourceTraffic[speedKey];
+          }
         }
       }
     });
