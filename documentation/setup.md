@@ -19,7 +19,7 @@ tsc; node ./build/traffic_manager.js
 ```
 
 ```
-curl http://localhost/Traffic/Reliable
+curl http://localhost:8000/Traffic/Reliable
 ```
 
 @reboot node /home/pi/StratuxHud/traffic_manager/build/traffic_manager.js &

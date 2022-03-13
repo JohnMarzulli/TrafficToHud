@@ -3,8 +3,8 @@
 // https://flaviocopes.com/node-websockets/
 // https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
 
-import * as http from "http";
-import * as debug from "debug";
+import http = require("http");
+import debug = require("debug");
 
 import RestServer from "./rest_server";
 

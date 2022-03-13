@@ -33,7 +33,6 @@ var altitudeKey = "Alt";
 var bearingKey = "Bearing";
 var trackKey = "Track";
 var speedKey = "Speed";
-var gnsDeltaKey = "GnssDiffFromBaroAlt";
 var secondsSinceLastReportKey = "secondsSinceLastReport";
 var displayNameKey = "displayName";
 var unknownDisplayName = "UNKNOWN";
@@ -332,12 +331,6 @@ var TrafficClient = /** @class */ (function () {
                 var gnsDelta = 0;
                 var sourceTraffic = trafficCache[icaoCode];
                 if (sourceTraffic != undefined && sourceTraffic != null) {
-                    if (gnsDeltaKey in sourceTraffic) {
-                        var sourceTrafficGns = sourceTraffic[gnsDeltaKey];
-                        if (sourceTrafficGns != undefined && sourceTrafficGns != null) {
-                            gnsDelta = sourceTrafficGns;
-                        }
-                    }
                     outReliableTraffic[icaoCode] = new Map();
                     outReliableTraffic[icaoCode][displayNameKey] = displayValue;
                     outReliableTraffic[icaoCode][secondsSinceLastReportKey] = sourceTraffic[secondsSinceLastReportKey];
@@ -345,7 +338,7 @@ var TrafficClient = /** @class */ (function () {
                     outReliableTraffic[icaoCode][longitudeKey] = sourceTraffic[longitudeKey];
                     outReliableTraffic[icaoCode][onGroundKey] = sourceTraffic[onGroundKey];
                     outReliableTraffic[icaoCode][distanceKey] = sourceTraffic[distanceKey];
-                    outReliableTraffic[icaoCode][altitudeKey] = sourceTraffic[altitudeKey] - gnsDelta;
+                    outReliableTraffic[icaoCode][altitudeKey] = sourceTraffic[altitudeKey] + gnsDelta;
                     outReliableTraffic[icaoCode][bearingKey] = sourceTraffic[bearingKey];
                     if (trackKey in sourceTraffic) {
                         outReliableTraffic[icaoCode][trackKey] = sourceTraffic[trackKey];

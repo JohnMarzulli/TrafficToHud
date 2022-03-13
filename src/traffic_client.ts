@@ -1,4 +1,4 @@
-import * as WebSocket from "ws";
+import WebSocket = require("ws");
 
 const StratuxAddress: string = "192.168.10.1";
 const SecondsToRunTrafficGarbageCollection: number = 5;
@@ -19,7 +19,6 @@ const altitudeKey: string = "Alt";
 const bearingKey: string = "Bearing";
 const trackKey: string = "Track";
 const speedKey: string = "Speed";
-const gnsDeltaKey: string = "GnssDiffFromBaroAlt";
 
 const secondsSinceLastReportKey: string = "secondsSinceLastReport";
 const displayNameKey: string = "displayName";
@@ -380,15 +379,6 @@ export class TrafficClient {
         var sourceTraffic = trafficCache[icaoCode];
 
         if (sourceTraffic != undefined && sourceTraffic != null) {
-
-          if (gnsDeltaKey in sourceTraffic) {
-            var sourceTrafficGns = sourceTraffic[gnsDeltaKey];
-
-            if (sourceTrafficGns != undefined && sourceTrafficGns != null) {
-              gnsDelta = sourceTrafficGns;
-            }
-          }
-
           outReliableTraffic[icaoCode] = new Map<string, JsonPackage>();
           outReliableTraffic[icaoCode][displayNameKey] = displayValue;
           outReliableTraffic[icaoCode][secondsSinceLastReportKey] = sourceTraffic[secondsSinceLastReportKey];
@@ -396,7 +386,7 @@ export class TrafficClient {
           outReliableTraffic[icaoCode][longitudeKey] = sourceTraffic[longitudeKey];
           outReliableTraffic[icaoCode][onGroundKey] = sourceTraffic[onGroundKey];
           outReliableTraffic[icaoCode][distanceKey] = sourceTraffic[distanceKey];
-          outReliableTraffic[icaoCode][altitudeKey] = sourceTraffic[altitudeKey] - gnsDelta;
+          outReliableTraffic[icaoCode][altitudeKey] = sourceTraffic[altitudeKey] + gnsDelta;
           outReliableTraffic[icaoCode][bearingKey] = sourceTraffic[bearingKey];
 
           if (trackKey in sourceTraffic) {
