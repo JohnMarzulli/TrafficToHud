@@ -266,7 +266,7 @@ export class TrafficClient {
     };
 
     WebSocketClient.onerror = function (error) {
-      console.error(`ERROR:${error.message}`);
+      console.error(`TRAFFIC ERROR:${error.message}`);
     };
 
     WebSocketClient.onmessage = function (message) {
