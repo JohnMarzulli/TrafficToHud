@@ -26,8 +26,8 @@ const displayNameKey: string = "displayName";
 
 const unknownDisplayName = "UNKNOWN";
 
-class JsonPackage extends Map<string, any>{ }
-class TrafficResponsePackage extends Map<string, JsonPackage>{ }
+class JsonPackage extends Map<string, any> { }
+class TrafficResponsePackage extends Map<string, JsonPackage> { }
 
 var trafficCache: TrafficResponsePackage = new Map<string, JsonPackage>();
 var lastWebsocketReportTime: number = 0;
@@ -143,10 +143,14 @@ function isRequestInvalid(
 function getTrafficResponseSubPackage(
   icaoAddress: string
 ): any {
+  let secondsSince: number = 0;
+
+  if (icaoAddress in trafficCache && secondsSinceLastReportKey in trafficCache[icaoAddress]) {
+    secondsSince = trafficCache[icaoAddress][secondsSinceLastReportKey];
+  }
+
   return {
-    secondsSinceLastReport: getSecondsSince(
-      trafficCache[icaoAddress][secondsSinceLastReportKey]
-    ),
+    secondsSinceLastReport: getSecondsSince(secondsSince),
     tailNumber: getDisplayName(trafficCache[icaoAddress])
   };
 }
@@ -257,7 +261,7 @@ export class TrafficClient {
     WebSocketClient = new WebSocket(`ws://${StratuxAddress}/traffic`);
 
     WebSocketClient.onopen = function () {
-      console.log("Socket open");
+      console.log("Traffic Socket open");
       lastWebsocketReportTime = Date.now();
     };
 
@@ -326,11 +330,11 @@ export class TrafficClient {
     req: Request
   ): TrafficResponsePackage {
     {
-      var response: TrafficResponsePackage = new Map<string, JsonPackage>();
+      const response: TrafficResponsePackage = new Map<string, JsonPackage>();
 
-      for (const icaoAddress in Object.keys(trafficCache)) {
-        response[icaoAddress] = getTrafficResponseSubPackage(icaoAddress);
-      }
+      Object.keys(trafficCache).forEach(icaoCode => {
+        response[icaoCode] = getTrafficResponseSubPackage(icaoCode);
+      });
 
       return response;
     }
