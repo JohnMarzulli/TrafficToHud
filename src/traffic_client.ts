@@ -181,7 +181,7 @@ function reportTraffic(
     // Create the entry if it is not already there.
     if (trafficCache[icaoAddress] == null) {
       trafficCache[icaoAddress] = report;
-      console.log(`${Date.now().toLocaleString()}: Adding ${icaoAddress}`);
+      //console.debug(`TRAFFIC:${Date.now().toLocaleString()}: Adding ${icaoAddress}`);
     } else {
       // Now go and perform the painful merge
       Object.keys(report).forEach(key => {
@@ -232,7 +232,7 @@ export class TrafficClient {
 
     trafficCache = newTrafficReport;
 
-    console.log(`GC: Kept ${keptCount}, purged ${purgedCount}`);
+    //console.debug(`TRAFFIC:GC: Kept ${keptCount}, purged ${purgedCount}`);
   }
 
   /**
@@ -271,7 +271,7 @@ export class TrafficClient {
 
     WebSocketClient.onmessage = function (message) {
       try {
-        var json = JSON.parse(message.data.toString());
+        const json = JSON.parse(message.data.toString());
         reportTraffic(json);
       } catch (e) {
         console.log(`${e}: Error handling traffic report:`, message.data);
@@ -374,19 +374,18 @@ export class TrafficClient {
   public static getTrafficReliableResponseBody(
     req: Request
   ): TrafficResponsePackage {
-    var outReliableTraffic: TrafficResponsePackage = new Map<string, JsonPackage>();
+    let outReliableTraffic: TrafficResponsePackage = new Map<string, JsonPackage>();
 
     Object.keys(trafficCache).forEach(icaoCode => {
       if (isReliableTraffic(trafficCache[icaoCode])) {
-        var displayValue: string = getDisplayName(trafficCache[icaoCode]);
-        var gnsDelta = 0;
-
-        var sourceTraffic = trafficCache[icaoCode];
+        const displayValue: string = getDisplayName(trafficCache[icaoCode]);
+        let gnsDelta = 0;
+        const sourceTraffic = trafficCache[icaoCode];
 
         if (sourceTraffic != undefined && sourceTraffic != null) {
 
           if (gnsDeltaKey in sourceTraffic) {
-            var sourceTrafficGns = sourceTraffic[gnsDeltaKey];
+            const sourceTrafficGns = sourceTraffic[gnsDeltaKey];
 
             if (sourceTrafficGns != undefined && sourceTrafficGns != null) {
               gnsDelta = sourceTrafficGns;

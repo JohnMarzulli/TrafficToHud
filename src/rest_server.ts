@@ -5,6 +5,10 @@ import * as express from "express";
 import * as logger from "morgan";
 import * as bodyParser from "body-parser";
 import { TrafficClient } from "./traffic_client";
+//import { WeatherClient } from "./weather_client";
+import { StatusClient } from "./status_client";
+import { RadarClient } from "./radar_client";
+import { Gdl90Client } from "./gdl90_client";
 
 /**
  * Service class that exposes the Traffic Client to the
@@ -44,6 +48,11 @@ class RestServer {
    */
   private getServiceResetResponseBody(req: Request): any {
     TrafficClient.resetWebSocketClient();
+    //WeatherClient.resetWebSocketClient();
+    RadarClient.resetWebSocketClient();
+    StatusClient.resetWebSocketClient();
+    Gdl90Client.resetWebSocketClient();
+
     return {
       resetTime: new Date().toUTCString()
     };
@@ -79,12 +88,22 @@ class RestServer {
     var mapping = {
       "/": this.getServiceInfoResponseBody,
       "/Service/Info": this.getServiceInfoResponseBody,
-      "/Service/Status": TrafficClient.getServiceStatusResponseBody,
       "/Service/Reset": this.getServiceResetResponseBody,
+      "/Service/Status": TrafficClient.getServiceStatusResponseBody,
       "/Traffic/Summary": TrafficClient.getTrafficOverviewResponseBody,
       "/Traffic/Full": TrafficClient.getTrafficFullResponseBody,
       "/Traffic/Reliable": TrafficClient.getTrafficReliableResponseBody,
-      "/Traffic/:id": TrafficClient.getTrafficDetailsResponseBody
+      "/Traffic/:id": TrafficClient.getTrafficDetailsResponseBody,
+      /*
+      "/Weather/Status": WeatherClient.getServiceStatusResponseBody,
+      "/Weather/Full": WeatherClient.getWeatherFullResponseBody,
+      */
+      "/Status/Status": StatusClient.getServiceStatusResponseBody,
+      "/Status/Full": StatusClient.getStatusFullResponseBody,
+      "/Radar/Status": RadarClient.getServiceStatusResponseBody,
+      "/Radar/Full": RadarClient.getRadarFullResponseBody,
+      "/Gdl90/Status": Gdl90Client.getServiceStatusResponseBody,
+      "/Gdl90/Full": Gdl90Client.getGdl90FullResponseBody
     };
 
     Object.keys(mapping).forEach(key => {
