@@ -56,7 +56,7 @@ export class RadarClient extends SocketClient {
       const stratuxAge: number = this.response_package[KnownTrafficKey][key][AgeKey];
 
       if (stratuxAge >= this.TrafficRemovalPeriodSeconds || lastRecievedAge >= this.TrafficRemovalPeriodSeconds) {
-        this.LogDebug(`GCed ${key}`);
+        this.LogSpew(`${this.socket_name}: GCed ${key}`);
       }
       else {
         gcedRadar[key] = this.response_package[KnownTrafficKey][key];
