@@ -122,7 +122,7 @@ export class Gdl90Client extends SocketClient {
         let velocity = (payload[12] << 8) | payload[13]; // Velocity
         let additionalData = payload.slice(14); // Any remaining data
 
-        this.LogDebug(`UAT BASIC MSG: TimeReceived=${timeOfReception}, ICAO=${icaoAddress}, flags=${flags}, lat=${latitude}, long=${longitude}, alt=${altitude}, vel=${velocity}, additiona=${additionalData}, `);
+        this.LogDebug(`UAT BASIC MSG: TimeReceived=${timeOfReception}, ICAO=${icaoAddress}, flags=${flags}, lat=${latitude}, long=${longitude}, alt=${altitude}, vel=${velocity}, additional=${additionalData}, `);
       }
       else if (messageType === '31') {
         // Basic report
