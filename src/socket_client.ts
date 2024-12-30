@@ -13,10 +13,10 @@ export abstract class SocketClient {
     private readonly StratuxAddress: string = "192.168.10.1";
 
     private readonly url: string;
-    private readonly socket_name: string;
     private readonly route: string;
     private readonly checkInterval: number = 10000; // 10 seconds
 
+    protected readonly socket_name: string;
     protected response_package: any = {};
     protected log_level: LogLevel = LogLevel.error;
 
@@ -72,7 +72,7 @@ export abstract class SocketClient {
         this.webSocketClient = new WebSocket(this.url);
         this.webSocketClient.onopen = () => this.handleOpen();
         this.webSocketClient.onmessage = (event) => this.handleMessage(event.data);
-        this.webSocketClient.onclose = () => this.LogDebug(`${this.socket_name}: closed`);
+        this.webSocketClient.onclose = () => this.LogInfo(`${this.socket_name}: closed`);
         this.webSocketClient.onerror = (error) => this.LogErrorDetails(`${this.socket_name}: error`, error);
     }
 
@@ -100,7 +100,7 @@ export abstract class SocketClient {
     }
 
     private reconnect(): void {
-        this.LogDebug("Reconnecting WebSocket...");
+        this.LogInfo(`${this.socket_name}: Reconnecting...`);
         if (this.webSocketClient) {
             this.webSocketClient.close();
         }
