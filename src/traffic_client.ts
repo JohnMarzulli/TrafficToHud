@@ -29,10 +29,9 @@ const unknownDisplayName = "UNKNOWN";
 class JsonPackage extends Map<string, any> { }
 class TrafficResponsePackage extends Map<string, JsonPackage> { }
 
-var trafficCache: TrafficResponsePackage = new Map<string, JsonPackage>();
-var lastWebsocketReportTime: number = 0;
-
-var WebSocketClient: WebSocket;
+let trafficCache: TrafficResponsePackage = new Map<string, JsonPackage>();
+let lastWebsocketReportTime: number = 0;
+let WebSocketClient: WebSocket;
 
 /**
  * Get the number of seconds since the given time.
@@ -76,7 +75,7 @@ function containsKeyAndValueIsNonNull(
 function containsRequiredKeysToBeReliable(
   inReport: JsonPackage
 ): boolean {
-  var requiredKeys = [
+  const requiredKeys = [
     latitudeKey,
     longitudeKey,
     trafficReliableKey,
@@ -88,7 +87,7 @@ function containsRequiredKeysToBeReliable(
     bearingKey
   ];
 
-  var requiredKeysAreNonNull = true;
+  let requiredKeysAreNonNull: boolean = true;
   requiredKeys.forEach(requiredKeyName => {
     requiredKeysAreNonNull = requiredKeysAreNonNull && containsKeyAndValueIsNonNull(inReport, requiredKeyName);
   });
@@ -176,7 +175,7 @@ function reportTraffic(
       return;
     }
 
-    var icaoAddress: string = report[icaoAddressKey].toString();
+    const icaoAddress: string = report[icaoAddressKey].toString();
 
     // Create the entry if it is not already there.
     if (trafficCache[icaoAddress] == null) {
@@ -213,12 +212,12 @@ export class TrafficClient {
    * @memberof TrafficClient
    */
   public static garbageCollectTraffic(): void {
-    var keptCount: number = 0;
-    var purgedCount: number = 0;
+    let keptCount: number = 0;
+    let purgedCount: number = 0;
 
-    var newTrafficReport: TrafficResponsePackage = new Map<string, JsonPackage>();
+    let newTrafficReport: TrafficResponsePackage = new Map<string, JsonPackage>();
     Object.keys(trafficCache).forEach(icaoCode => {
-      var secondsSinceLastReport: number = getSecondsSince(
+      const secondsSinceLastReport: number = getSecondsSince(
         trafficCache[icaoCode][secondsSinceLastReportKey]
       );
 
@@ -329,15 +328,13 @@ export class TrafficClient {
   public static getTrafficOverviewResponseBody(
     req: Request
   ): TrafficResponsePackage {
-    {
-      const response: TrafficResponsePackage = new Map<string, JsonPackage>();
+    const response: TrafficResponsePackage = new Map<string, JsonPackage>();
 
-      Object.keys(trafficCache).forEach(icaoCode => {
-        response[icaoCode] = getTrafficResponseSubPackage(icaoCode);
-      });
+    Object.keys(trafficCache).forEach(icaoCode => {
+      response[icaoCode] = getTrafficResponseSubPackage(icaoCode);
+    });
 
-      return response;
-    }
+    return response;
   }
 
   /**
@@ -447,9 +444,9 @@ export class TrafficClient {
 function getCachedItemFromValidRequest(
   req: { params: { id: string; }; }
 ) {
-  var cachedItem = null;
+  let cachedItem = null;
   try {
-    var key: number = Number(req?.params?.id);
+    const key: number = Number(req?.params?.id);
 
     cachedItem = trafficCache[key];
   } catch {
