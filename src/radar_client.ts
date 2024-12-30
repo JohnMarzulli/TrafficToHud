@@ -1,105 +1,68 @@
+import { LogLevel, SocketClient } from "./socket_client";
 import * as WebSocket from "ws";
 
-const StratuxAddress: string = "192.168.10.1";
-const SecondsToCheckSocketClient: number = 1;
-const WebSocketTimeoutSeconds: number = 10;
+const KnownTrafficKey: string = "known_traffic";
+const IcaoAddressKey: string = "Icao_addr";
+const ReportRecivedKey: string = "ReportReceivedAt";
+const AgeKey = "Age";
 
 
-class JsonPackage extends Map<string, any> { }
-class RadarResponsePackage extends Map<string, JsonPackage> { }
+export class RadarClient extends SocketClient {
+  private readonly TrafficRemovalPeriodSeconds: number = 60.0;
 
-var radarCache: RadarResponsePackage = new Map<string, JsonPackage>();
-var lastWebsocketReportTime: number = 0;
-
-var radarWebSocketClient: WebSocket;
-
-/**
- * Get the number of seconds since the given time.
- *
- * @param {number} lastTime The time we want to get the time since.
- * @returns {number} The number of seconds between NOW and the given time.
- */
-function getSecondsSince(
-  lastTime: number
-): number {
-  if (lastTime == null) {
-    return 0.0;
+  constructor() {
+    super("RADAR", "radar", LogLevel.debug);
   }
 
-  return (Date.now() - lastTime) / 1000;
-}
+  protected report(report: string) {
+    let json = JSON.parse(report);
 
-function reportRadar(
-  report: JsonPackage
-): void {
-  try {
-    if (report == null) {
+    if (json == null || json == undefined) {
+      json = {};
+    }
+
+    if (this.response_package == null || this.response_package == undefined) {
+      this.response_package = json;
+    }
+
+    if (!this.keyInPackage(this.response_package, KnownTrafficKey)) {
+      this.response_package[KnownTrafficKey] = {};
+    }
+
+    if (this.keyInPackage(json, IcaoAddressKey)) {
+      const trafficKey = json[IcaoAddressKey];
+
+      json[ReportRecivedKey] = Date.now();
+
+      this.response_package[KnownTrafficKey][trafficKey] = json;
+    } else {
+      const merged = { ...this.response_package, ...json };
+      this.response_package = merged;
+    }
+  }
+
+  protected handleMessage(data: WebSocket.Data): void {
+    super.handleMessage(data);
+
+    if (!this.keyInPackage(this.response_package, KnownTrafficKey)) {
       return;
     }
 
-    lastWebsocketReportTime = Date.now();
-  } catch (e) {
-    console.error(`Issue merging report into cache:${e}`);
-  }
-}
+    let gcedRadar = {};
 
+    for (const key in this.response_package[KnownTrafficKey]) {
+      const lastReceivedTime: number = this.response_package[KnownTrafficKey][key][ReportRecivedKey];
+      const lastRecievedAge: number = (Date.now() - lastReceivedTime) / 1000.0;
+      const stratuxAge: number = this.response_package[KnownTrafficKey][key][AgeKey];
 
-export class RadarClient {
-  public static resetWebSocketClient(): void {
-    this.createWebSocketClient();
-  }
-
-  public static createWebSocketClient(): void {
-    if (radarWebSocketClient != null) {
-      console.log("Radar Socket closed by createWebSocket");
-      radarWebSocketClient.close();
-    }
-
-    radarWebSocketClient = new WebSocket(`ws://${StratuxAddress}/radar`);
-
-    radarWebSocketClient.onopen = function () {
-      console.log("Radar Socket open");
-      lastWebsocketReportTime = Date.now();
-    };
-
-    radarWebSocketClient.onerror = function (error) {
-      console.error(`RADAR ERROR:${error.message}`);
-    };
-
-    radarWebSocketClient.onmessage = function (message) {
-      //console.debug(`Radar: ${message.data.toString()}`);
-      try {
-        lastWebsocketReportTime = Date.now();
-
-        var json = JSON.parse(message.data.toString());
-        reportRadar(json);
-      } catch (e) {
-        console.log(`${e}: Error handling Radar report:`, message.data);
+      if (stratuxAge >= this.TrafficRemovalPeriodSeconds || lastRecievedAge >= this.TrafficRemovalPeriodSeconds) {
+        this.LogDebug(`GCed ${key}`);
       }
-    };
-  }
-  public static checkWebSocket(): void {
-    if (radarWebSocketClient == null
-      || getSecondsSince(lastWebsocketReportTime) > WebSocketTimeoutSeconds) {
-      console.log(`Radar Socket not heard from in ${WebSocketTimeoutSeconds} seconds`);
-      RadarClient.createWebSocketClient();
+      else {
+        gcedRadar[key] = this.response_package[KnownTrafficKey][key];
+      }
     }
-  }
 
-  public static getServiceStatusResponseBody(
-    req: Request
-  ): any {
-    return {
-      socketStatus: radarWebSocketClient != null ? radarWebSocketClient.readyState : 0,
-      socketTimeSinceLastTraffic: getSecondsSince(lastWebsocketReportTime)
-    };
-  }
-
-  public static getRadarFullResponseBody(
-    req: Request
-  ): string {
-    return '';
+    this.response_package[KnownTrafficKey] = gcedRadar;
   }
 }
-
-setInterval(RadarClient.checkWebSocket, SecondsToCheckSocketClient * 1000);

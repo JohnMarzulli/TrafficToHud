@@ -5,7 +5,6 @@ import * as express from "express";
 import * as logger from "morgan";
 import * as bodyParser from "body-parser";
 import { TrafficClient } from "./traffic_client";
-//import { WeatherClient } from "./weather_client";
 import { StatusClient } from "./status_client";
 import { RadarClient } from "./radar_client";
 import { Gdl90Client } from "./gdl90_client";
@@ -19,6 +18,24 @@ import { Gdl90Client } from "./gdl90_client";
 class RestServer {
   // ref to Express instance
   public express: express.Application;
+  private static readonly status_client: StatusClient = new StatusClient();
+  private static readonly radar_client: RadarClient = new RadarClient();
+  private static readonly gdl90_client: Gdl90Client = new Gdl90Client();
+
+  // Making the sockets static and then having static handlers is
+  // a horrific side effect of TS/JS and the object model it uses.
+  // The calls to the Socket get a "this" value that points
+  // to the BASE EXPRESS INSTANCE, not the handler's instance.
+
+  private static GetStatusStatus(req: Request): any { return RestServer.status_client.getServiceStatus(req); }
+  private static GetStatusResponse(req: Request): any { return RestServer.status_client.getServiceResponse(req); }
+
+
+  private static GetRadarStatus(req: Request): any { return RestServer.radar_client.getServiceStatus(req); }
+  private static GetRadarResponse(req: Request): any { return RestServer.radar_client.getServiceResponse(req); }
+
+  private static GetGdl90Status(req: Request): any { return RestServer.gdl90_client.getServiceStatus(req); }
+  private static GetGdl90Response(req: Request): any { return RestServer.gdl90_client.getServiceResponse(req); }
 
   /**
    * Returns the information about the service.
@@ -48,10 +65,9 @@ class RestServer {
    */
   private getServiceResetResponseBody(req: Request): any {
     TrafficClient.resetWebSocketClient();
-    //WeatherClient.resetWebSocketClient();
-    RadarClient.resetWebSocketClient();
-    StatusClient.resetWebSocketClient();
-    Gdl90Client.resetWebSocketClient();
+    RestServer.radar_client.reset();
+    RestServer.status_client.reset();
+    RestServer.gdl90_client.reset();
 
     return {
       resetTime: new Date().toUTCString()
@@ -85,7 +101,7 @@ class RestServer {
   private routes(): void {
     let router = express.Router();
 
-    var mapping = {
+    let mapping = {
       "/": this.getServiceInfoResponseBody,
       "/Service/Info": this.getServiceInfoResponseBody,
       "/Service/Reset": this.getServiceResetResponseBody,
@@ -94,16 +110,12 @@ class RestServer {
       "/Traffic/Full": TrafficClient.getTrafficFullResponseBody,
       "/Traffic/Reliable": TrafficClient.getTrafficReliableResponseBody,
       "/Traffic/:id": TrafficClient.getTrafficDetailsResponseBody,
-      /*
-      "/Weather/Status": WeatherClient.getServiceStatusResponseBody,
-      "/Weather/Full": WeatherClient.getWeatherFullResponseBody,
-      */
-      "/Status/Status": StatusClient.getServiceStatusResponseBody,
-      "/Status/Full": StatusClient.getStatusFullResponseBody,
-      "/Radar/Status": RadarClient.getServiceStatusResponseBody,
-      "/Radar/Full": RadarClient.getRadarFullResponseBody,
-      "/Gdl90/Status": Gdl90Client.getServiceStatusResponseBody,
-      "/Gdl90/Full": Gdl90Client.getGdl90FullResponseBody
+      "/Status/Status": RestServer.GetStatusStatus,
+      "/Status/Full": RestServer.GetStatusResponse,
+      "/Radar/Status": RestServer.GetRadarStatus,
+      "/Radar/Full": RestServer.GetRadarResponse,
+      "/Gdl90/Status": RestServer.GetGdl90Status,
+      "/Gdl90/Full": RestServer.GetGdl90Response
     };
 
     Object.keys(mapping).forEach(key => {
