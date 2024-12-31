@@ -8,31 +8,31 @@ export enum LogLevel {
 };
 
 export abstract class LoggingObject {
-    private log_level: LogLevel;
+    private readonly logLevel: LogLevel;
 
     public constructor(
         log_level: LogLevel = LogLevel.debug
     ) {
-        this.log_level = log_level;
+        this.logLevel = log_level;
     }
 
     protected LogSpew(text: string) {
-        if (this.log_level <= LogLevel.spew) { console.log(text); }
+        if (this.logLevel <= LogLevel.spew) { console.log(text); }
     }
 
     protected LogInfo(text: string) {
-        if (this.log_level <= LogLevel.info) { console.log(text); }
+        if (this.logLevel <= LogLevel.info) { console.log(text); }
     }
 
     protected LogDebug(text: string) {
-        if (this.log_level <= LogLevel.debug) { console.debug(text); }
+        if (this.logLevel <= LogLevel.debug) { console.debug(text); }
     }
 
     protected LogError(text: string) {
-        if (this.log_level <= LogLevel.error) { console.error(text); }
+        if (this.logLevel <= LogLevel.error) { console.error(text); }
     }
 
     protected LogErrorDetails(text: string, details: any) {
-        if (this.log_level <= LogLevel.error) { console.error(text, details); }
+        if (this.logLevel <= LogLevel.error) { console.error(text, details); }
     }
 }

@@ -4,10 +4,10 @@
 import * as express from "express";
 import * as logger from "morgan";
 import * as bodyParser from "body-parser";
-import { TrafficClient } from "./traffic_client";
-import { StatusClient } from "./status_client";
-import { RadarClient } from "./radar_client";
-import { Gdl90Client } from "./gdl90_client";
+import { TrafficClient } from "./traffic-client";
+import { StatusClient } from "./status-client";
+import { RadarClient } from "./radar-client";
+import { Gdl90Client } from "./gdl90-client";
 
 /**
  * Service class that exposes the Traffic Client to the

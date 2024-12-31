@@ -8,10 +8,13 @@
             "type": "node",
             "request": "launch",
             "name": "TrafficToHud",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/build/traffic_manager.js"
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/traffic-manager.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
         }
     ]
 }

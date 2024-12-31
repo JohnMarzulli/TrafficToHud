@@ -6,7 +6,7 @@
 import * as http from "http";
 import * as debug from "debug";
 
-import RestServer from "./rest_server";
+import RestServer from "./rest-server";
 
 debug("ts-express:server");
 
