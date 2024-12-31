@@ -1,15 +1,7 @@
 import * as WebSocket from "ws";
+import { LoggingObject, LogLevel } from "./logging_object";
 
-export enum LogLevel {
-    all = 0,
-    spew,
-    info,
-    debug,
-    error,
-    none
-};
-
-export abstract class SocketClient {
+export abstract class SocketClient extends LoggingObject {
     private readonly StratuxAddress: string = "192.168.10.1";
 
     private readonly url: string;
@@ -18,7 +10,6 @@ export abstract class SocketClient {
 
     protected readonly socket_name: string;
     protected response_package: any = {};
-    protected log_level: LogLevel = LogLevel.error;
 
     private webSocketClient: WebSocket | null = null;
     private lastMessageTime: number = 0;
@@ -29,10 +20,11 @@ export abstract class SocketClient {
         route: string,
         log_level: LogLevel = LogLevel.error
     ) {
+        super(log_level);
+
         this.socket_name = socket_name;
         this.route = route;
         this.url = `ws://${this.StratuxAddress}/${this.route}`;
-        this.log_level = log_level;
 
         this.start();
     }
@@ -49,23 +41,6 @@ export abstract class SocketClient {
         }
 
         this.connect();
-    }
-
-    protected LogSpew(text: string) {
-        if (this.log_level <= LogLevel.spew) { console.log(text); }
-    }
-
-    protected LogInfo(text: string) {
-        if (this.log_level <= LogLevel.info) { console.log(text); }
-    }
-    protected LogDebug(text: string) {
-        if (this.log_level <= LogLevel.debug) { console.debug(text); }
-    }
-    protected LogError(text: string) {
-        if (this.log_level <= LogLevel.error) { console.error(text); }
-    }
-    protected LogErrorDetails(text: string, details: any) {
-        if (this.log_level <= LogLevel.error) { console.error(text, details); }
     }
 
     private connect(): void {

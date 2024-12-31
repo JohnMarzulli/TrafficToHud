@@ -1,4 +1,5 @@
-import { LogLevel, SocketClient } from "./socket_client";
+import { SocketClient } from "./socket_client";
+import { LogLevel } from "./logging_object";
 
 export class StatusClient extends SocketClient {
   constructor() {

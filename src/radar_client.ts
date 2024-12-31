@@ -1,9 +1,10 @@
-import { LogLevel, SocketClient } from "./socket_client";
+import { SocketClient } from "./socket_client";
+import { LoggingObject, LogLevel } from "./logging_object";
 import * as WebSocket from "ws";
 
 const KnownTrafficKey: string = "known_traffic";
 const IcaoAddressKey: string = "Icao_addr";
-const ReportRecivedKey: string = "ReportReceivedAt";
+const ReportReceivedKey: string = "ReportReceivedAt";
 const AgeKey = "Age";
 
 
@@ -32,7 +33,7 @@ export class RadarClient extends SocketClient {
     if (this.keyInPackage(json, IcaoAddressKey)) {
       const trafficKey = json[IcaoAddressKey];
 
-      json[ReportRecivedKey] = Date.now();
+      json[ReportReceivedKey] = Date.now();
 
       this.response_package[KnownTrafficKey][trafficKey] = json;
     } else {
@@ -51,11 +52,11 @@ export class RadarClient extends SocketClient {
     let gcedRadar = {};
 
     for (const key in this.response_package[KnownTrafficKey]) {
-      const lastReceivedTime: number = this.response_package[KnownTrafficKey][key][ReportRecivedKey];
-      const lastRecievedAge: number = (Date.now() - lastReceivedTime) / 1000.0;
+      const lastReceivedTime: number = this.response_package[KnownTrafficKey][key][ReportReceivedKey];
+      const lastReceivedAge: number = (Date.now() - lastReceivedTime) / 1000.0;
       const stratuxAge: number = this.response_package[KnownTrafficKey][key][AgeKey];
 
-      if (stratuxAge >= this.TrafficRemovalPeriodSeconds || lastRecievedAge >= this.TrafficRemovalPeriodSeconds) {
+      if (stratuxAge >= this.TrafficRemovalPeriodSeconds || lastReceivedAge >= this.TrafficRemovalPeriodSeconds) {
         this.LogSpew(`${this.socket_name}: GCed ${key}`);
       }
       else {
