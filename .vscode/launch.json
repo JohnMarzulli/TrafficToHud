@@ -15,6 +15,15 @@
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "ProcessExampleMessages",
+            "program": "${workspaceFolder}/build/Messages/load-examples.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
         }
     ]
 }

@@ -16,6 +16,6 @@ export class OwnshipDetails extends DecodedGdl90Message {
         assert(subType == 0);
 
         // Uses 3.5.1
-        this.LogSpew(`OWNSHIP DETAILS: Sub=${subType}, DevName=${message.message.subarray(12, 19)}, DevLongName=${message.message.subarray(20, 35)}`);
+        this.LogSpew(`OWNSHIP DETAILS: Sub=${subType}, DevName=${message.message.subarray(12, 20)}, DevLongName=${message.message.subarray(20, 36)}`);
     }
 }

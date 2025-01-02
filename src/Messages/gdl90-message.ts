@@ -1,17 +1,16 @@
 import * as DataHandling from "../data_handling";
+import { BasicReport } from "./basic-report";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Heartbeat } from "./gdl90-heartbeat";
-import { Ownship } from "./Ownship";
-import { OwnshipAltitude } from "./OwnshipAltitude";
-import { OwnshipAhrs } from "./OwnshipAhrs";
-import { OwnshipDetails } from "./OwnshipDetails";
-import { Traffic } from "./Traffic";
-import { StratuxHeartbeat } from "./StratuxHeartbeat";
-import { BasicReport } from "./basic-report";
 import { LongReport } from "./long-report";
-import { Uplink } from "./Uplink";
-import { StratuxStatus } from "./StratuxStatus";
-
+import { Ownship } from "./ownship";
+import { OwnshipAhrs } from "./ownship-ahrs";
+import { OwnshipAltitude } from "./ownship-altitude";
+import { OwnshipDetails } from "./ownship-details";
+import { StratuxHeartbeat } from "./stratux-heartbeat";
+import { StratuxStatus } from "./stratux-status";
+import { Traffic } from "./traffic";
+import { Uplink } from "./uplink";
 
 export class Gdl90Message {
     public readonly receivedAt: number;

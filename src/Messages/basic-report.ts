@@ -3,7 +3,6 @@ import { LogLevel } from "../logging-object";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
 
-
 export class BasicReport extends DecodedGdl90Message {
     constructor(
         message: Gdl90Message
@@ -21,7 +20,7 @@ export class BasicReport extends DecodedGdl90Message {
         // Basic report
         // Pg 26, FAA
         // UAT?
-        let timeOfReception = message.message.subarray(2, 4);
+        let timeOfReception = message.message.subarray(2, 5);
         let payload = message.message.slice(5);
 
         // The payload is defined in RTCA/DO-282, Section 2.2

@@ -15,6 +15,6 @@ export class LongReport extends DecodedGdl90Message {
         // Basic report
         // Pg 26, FAA
         // UAT?
-        this.LogSpew(`UAT LONG MSG: TimeReceived=${message.message.subarray(2, 4)}, Payload=${message.rawMessage.substring(5, 38)}`);
+        this.LogSpew(`UAT LONG MSG: TimeReceived=${message.message.subarray(2, 5)}, Payload=${message.rawMessage.substring(5, 38)}`);
     }
 }

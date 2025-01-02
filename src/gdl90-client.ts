@@ -1,7 +1,7 @@
 import { SocketClient } from "./socket-client";
 import * as WebSocket from "ws";
 import { LogLevel } from "./logging-object";
-import * as GdlMessages from "./Messages/gdl90-message";
+import * as GdlMessages from "./messages/gdl90-message";
 
 const MessageCountsKey: string = "msg_counts";
 
