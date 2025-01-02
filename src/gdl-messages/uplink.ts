@@ -1,4 +1,4 @@
-import { assert, log } from "console";
+import { assert, Console, log } from "console";
 import { LogLevel } from "../logging-object";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
@@ -113,6 +113,48 @@ export class UatUplinkFrame {
         // NEXRAD description is on https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
         // pg36
         // FIS-B Spec: https://imlive.s3.amazonaws.com/Federal%20Government/ID133825730251125154988746465871038370/Attachment%205%20-%20SBS%20Essential%20Services%20System%20Specification_FAA-E-3006%20Rev.%20B%20dated%208-23-2019.pdf
+
+        // NEXRAD
+        if (productId == 63) {
+            const rleSet: boolean = (frame[4] & 0b10000000) != 0;
+            const blockReference = ((frame[4] & 0b00000111) << 16) | (frame[5] << 8) | frame[6];
+            const graphics: Uint8Array = frame.subarray(7);
+
+            /*
+            Each of the remaining bytes of the APDU encode the value of each of the 128 bins that comprise
+            this block (as 4 rows of 32 bins each). In each byte, the upper 5 bits represent the number of
+            sequential bins (minus 1) that each have the intensity value given in the lower 3 bits. The next
+            byte in the example data (0x30) indicates that the first 7 bins have Intensity value 0. The
+            following byte (0x89) indicates that the next 18 bins have Intensity value 1. The following byte
+            (0x50) indicates that the next 11 bins (the last 7 of the first row, plus the first 4 of the following
+            row) have Intensity value 0. 
+            */
+
+            let binCount = 0;
+            let bins: string[] = [];
+            for (let index in graphics) {
+                const apduByte = graphics[index];
+                const runCount = (apduByte >> 3) + 1;
+                const intensity = apduByte & 0b00000111;
+
+                for (let i = 0; i < runCount; i++) {
+                    ++binCount;
+
+                    const instensityToShow: string = intensity > 0 ? intensity.toString() : " ";
+                    bins.push(instensityToShow);
+                }
+            }
+            // Block references may be in §A.3.2 of the FIS-B MOPS, RTCA DO-358A.
+
+            console.log(`NEXRAD: blockReference=${blockReference}, rleSet=${rleSet}, binCount=${binCount}`);
+
+            while (bins.length > 0) {
+                const row = bins.splice(0, 32);
+                const displayRow = row.join("");
+
+                console.log(displayRow);
+            }
+        }
 
         switch (opt) {
             case 0: // Hours, Minutes
@@ -282,3 +324,36 @@ function decodeHeader(
 
     return [lat, lon];
 }
+
+function getPayloadFromSample(
+    faaSample: string
+): Uint8Array {
+    let payload: Uint8Array = new Uint8Array(faaSample.length / 2);
+    for (let i = 0; i < faaSample.length; i += 2) {
+        payload[i / 2] = parseInt(faaSample.substr(i, 2), 16);
+    }
+
+    return payload;
+}
+
+export function decodePayloadFromSample() {
+    const payload: Uint8Array = getPayloadFromSample(nexRadPlayloadSample1);
+    const frameLength = (payload[0] << 1) | (payload[1] >> 7);
+    const frameType = payload[2] & 0b00000001;
+    const graphic = payload.subarray(2, frameLength + 2);
+
+    if (graphic.length != frameLength) {
+        console.error(`Frame length mismatch: ${graphic.length} != ${frameLength}`);
+    }
+
+    // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
+    // The element ID is SET which makes it Run Length Encoded.
+    // The block reference number is 0x4A570 in the North hemisphere.
+    // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
+
+    const frameData: Uint8Array = payload.subarray(2, frameLength + 2);
+    const decodedFrame = new UatUplinkFrame(0, frameType, frameData);
+}
+
+const nexRadPlayloadSample1: string = "130000FC000084A570308950111A53120930110A23451B0A0918090A1B0C1D0607061D041B0A0108208000FC000084A3AE00090A1314150617061D04130A01080112131C0D06270615140B0A01000112131C0D06270615140B0A010000090A1314150617061D04130A0108148000FC000084A1EC00090A1B0C1D0607061D041B0A010808110A23451B0A091018111A53120920308930130000FC000084AAB7308950111A53120930110A23451B0A0918090A1B0C1D0607061D041B0A0108208000FC000084A8F500090A1314150617061D04130A01080112131C0D06270615140B0A01000112131C0D06270615140B0A010000090A1314150617061D04130A0108148000FC000084A73300090A1B0C1D0607061D041B0A010808110A23451B0A091018111A53120920308930130000FC000084AFFD308950111A53120930110A23451B0A0918090A1B0C1D0607061D041B0A0108000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+const nexRadPlayloadSample2: string = "208000FC000084AE3B00090A1314150617061D04130A01080112131C0D06270615140B0A01000112131C0D06270615140B0A010000090A1314150617061D04130A0108148000FC000084AC7900090A1B0C1D0607061D041B0A010808110A23451B0A091018111A53120920308930040000FC000004B1BDF0040000FC000004AFFBD0040000FC000004AE39D0040000FC000004AC77D0040000FC000004AAB5D0040000FC000004A8F3D0040000FC000004A731D0040000FC000004A56FE0040000FC000004A3ADE0040000FC000004A1EBE000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";

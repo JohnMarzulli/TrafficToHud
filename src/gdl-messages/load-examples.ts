@@ -1,9 +1,12 @@
 import { Gdl90Message } from './gdl90-message'; // Assuming Gdl90Message is in this file
+import { decodePayloadFromSample } from './uplink'; // Assuming decodePayloadFromSample is in this file
 import * as fs from 'fs';
 import * as path from 'path';
 
 // Main execution
 (async function main() {
+    decodePayloadFromSample();
+
     const filePath = path.resolve(__dirname, '../../documentation/full-nexrad.json'); // Adjust path as needed
 
     try {
