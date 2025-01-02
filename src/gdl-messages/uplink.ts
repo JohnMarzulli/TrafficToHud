@@ -112,6 +112,7 @@ export class UatUplinkFrame {
 
         // NEXRAD description is on https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
         // pg36
+        // FIS-B Spec: https://imlive.s3.amazonaws.com/Federal%20Government/ID133825730251125154988746465871038370/Attachment%205%20-%20SBS%20Essential%20Services%20System%20Specification_FAA-E-3006%20Rev.%20B%20dated%208-23-2019.pdf
 
         switch (opt) {
             case 0: // Hours, Minutes
