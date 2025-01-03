@@ -120,6 +120,9 @@ export class UatUplinkFrame {
             const blockReference = ((frame[4] & 0b00000111) << 16) | (frame[5] << 8) | frame[6];
             const graphics: Uint8Array = frame.subarray(7);
 
+            // 0x4A570 = 123º 12' to 122º 24' West, 45º 04' to 45º 08' North
+            const boundaries = decodeBlockId(blockReference);
+
             /*
             Each of the remaining bytes of the APDU encode the value of each of the 128 bins that comprise
             this block (as 4 rows of 32 bins each). In each byte, the upper 5 bits represent the number of
@@ -146,7 +149,7 @@ export class UatUplinkFrame {
             }
             // Block references may be in §A.3.2 of the FIS-B MOPS, RTCA DO-358A.
 
-            console.log(`NEXRAD: blockReference=${blockReference}, rleSet=${rleSet}, binCount=${binCount}`);
+            console.log(`NEXRAD: blockReference=${blockReference}/0x${blockReference.toString(16).toUpperCase()}, rleSet=${rleSet}, binCount=${binCount}`);
 
             while (bins.length > 0) {
                 const row = bins.splice(0, 32);
@@ -336,23 +339,75 @@ function getPayloadFromSample(
     return payload;
 }
 
+interface CoordinateBoundaries {
+    minLatitude: number;
+    maxLatitude: number;
+    minLongitude: number;
+    maxLongitude: number;
+}
+
+function decodeBlockId(blockId: number): CoordinateBoundaries {
+    // 0x4A570
+    // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
+    // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
+    const latCenter: number = (blockId / 450) * 0.0666666667; // (0x4A570 / 450)*0.0666666667 = 45.1 // This is +/-.0333333333 of the bounds set by the example!
+    const lonEdge: number = ((blockId % 450) * 0.8) - 360; // => ((0x4A570 % 450) * 0.8) - 360 = -123.19999999999999 which is the eastern edge?! 0.8 difference from the other edge?!?!
+
+    const minLatitude: number = latCenter - 0.0333333333;
+    const maxLatitude: number = latCenter + 0.0333333333;
+    const minLongitude: number = lonEdge;
+    const maxLongitude: number = lonEdge + 0.8;
+
+    return {
+        minLatitude,
+        maxLatitude,
+        minLongitude,
+        maxLongitude
+    };
+}
+
 export function decodePayloadFromSample() {
-    const payload: Uint8Array = getPayloadFromSample(nexRadPlayloadSample1);
-    const frameLength = (payload[0] << 1) | (payload[1] >> 7);
-    const frameType = payload[2] & 0b00000001;
-    const graphic = payload.subarray(2, frameLength + 2);
+    const payloads: Uint8Array[] = [getPayloadFromSample(nexRadPlayloadSample1), getPayloadFromSample(nexRadPlayloadSample2)];
 
-    if (graphic.length != frameLength) {
-        console.error(`Frame length mismatch: ${graphic.length} != ${frameLength}`);
+    for (const payload of payloads) {
+        const frameLength = (payload[0] << 1) | (payload[1] >> 7);
+        const frameType = payload[2] & 0b00000001;
+        const graphic = payload.subarray(2, frameLength + 2);
+
+        if (graphic.length != frameLength) {
+            console.error(`Frame length mismatch: ${graphic.length} != ${frameLength}`);
+        }
+
+        // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
+        // The element ID is SET which makes it Run Length Encoded.
+        // The block reference number is 0x4A570 in the North hemisphere.
+        // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
+        // Middle is -122.505005, 45.00275
+
+        // GPS minutes to decimal degrees:
+        // https://www.fcc.gov/media/radio/dms-decimal
+        //
+        // 0x4A570
+        // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
+        // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
+
+        // 0x4AE3B
+        // 45° 0' 0"N, 123° 12' 18" W = 45.0000000, -123.205
+        // 45° 4' 0"N, 122° 24' 0" W = 45.0666667, -122.4
+
+        // https://github.com/digidocs/ads-b/blob/master/uat-decode/radar.py 
+
+        // blat = (block_num / 450)*0.0666666667 ?!?!?!?! => (0x4A570 / 450)*0.0666666667 = 45.1 // This is +/-.0333333333 of the bounds set by the example!
+        // blon = ((blockReference % 450) * 0.8) - 360 => ((0x4A570 % 450) * 0.8) - 360 = -123.19999999999999 which is the eastern edge?! 0.8 difference from the other edge?!?!
+
+        // 0x4C518 => binary 0000001001010010101110000
+        // 45 => binary  00101101
+        // 123 => binary 01111011
+        // 122 => binary 01111010
+
+        const frameData: Uint8Array = payload.subarray(2, frameLength + 2);
+        const decodedFrame = new UatUplinkFrame(0, frameType, frameData);
     }
-
-    // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
-    // The element ID is SET which makes it Run Length Encoded.
-    // The block reference number is 0x4A570 in the North hemisphere.
-    // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
-
-    const frameData: Uint8Array = payload.subarray(2, frameLength + 2);
-    const decodedFrame = new UatUplinkFrame(0, frameType, frameData);
 }
 
 const nexRadPlayloadSample1: string = "130000FC000084A570308950111A53120930110A23451B0A0918090A1B0C1D0607061D041B0A0108208000FC000084A3AE00090A1314150617061D04130A01080112131C0D06270615140B0A01000112131C0D06270615140B0A010000090A1314150617061D04130A0108148000FC000084A1EC00090A1B0C1D0607061D041B0A010808110A23451B0A091018111A53120920308930130000FC000084AAB7308950111A53120930110A23451B0A0918090A1B0C1D0607061D041B0A0108208000FC000084A8F500090A1314150617061D04130A01080112131C0D06270615140B0A01000112131C0D06270615140B0A010000090A1314150617061D04130A0108148000FC000084A73300090A1B0C1D0607061D041B0A010808110A23451B0A091018111A53120920308930130000FC000084AFFD308950111A53120930110A23451B0A0918090A1B0C1D0607061D041B0A0108000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
