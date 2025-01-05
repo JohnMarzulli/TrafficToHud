@@ -2,26 +2,42 @@ import { CoordinateBoundaries } from "../types/boundaries";
 
 export class ReflectivityRadar {
     private static MaxReportAgeSeconds = 15 * 60;
-    private static mapByReferenceId: Map<number, Reflectivity> = new Map<number, Reflectivity>();
+    private static mapByReferenceId: any = {};
+    private static lastGcTime: number = 0;
 
-    public static addReflectivity(
+    public static getReflectivity(
+        req: Request
+    ): any {
+        const secondsSinceLastGc = (Date.now() - ReflectivityRadar.lastGcTime) / 1000;
+
+        if (secondsSinceLastGc > 60) {
+            ReflectivityRadar.removeOldReports();
+
+            ReflectivityRadar.lastGcTime = Date.now();
+        }
+
+        return ReflectivityRadar.mapByReferenceId;
+    }
+
+    public static addReport(
         report: Reflectivity,
     ): void {
-        ReflectivityRadar.mapByReferenceId.set(report.globalBlockReferenceId, report);
-
-        ReflectivityRadar.removeOldReports();
+        ReflectivityRadar.mapByReferenceId[report.globalBlockReferenceId] = report;
     }
 
     private static removeOldReports(): void {
         const now = Date.now();
 
-        ReflectivityRadar.mapByReferenceId.forEach((report, id) => {
-            const reportAgeSeconds: number = (now - report.reportTime) / 1000;
+        for (const id in ReflectivityRadar.mapByReferenceId) {
+            if (ReflectivityRadar.mapByReferenceId.hasOwnProperty(id)) {
+                const report = ReflectivityRadar.mapByReferenceId[id];
+                const reportAgeSeconds: number = (now - report.reportTime) / 1000;
 
-            if (reportAgeSeconds > ReflectivityRadar.MaxReportAgeSeconds) {
-                ReflectivityRadar.mapByReferenceId.delete(id);
+                if (reportAgeSeconds > ReflectivityRadar.MaxReportAgeSeconds) {
+                    delete ReflectivityRadar.mapByReferenceId[id];
+                }
             }
-        });
+        }
     }
 }
 

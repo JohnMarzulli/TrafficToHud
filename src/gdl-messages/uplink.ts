@@ -115,7 +115,7 @@ export class UatUplinkFrame {
         }
 
         const reflectivty: Reflectivity = new Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
-        ReflectivityRadar.addReflectivity(reflectivty);
+        ReflectivityRadar.addReport(reflectivty);
     }
 
     constructor(
