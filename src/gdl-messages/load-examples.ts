@@ -6,25 +6,37 @@ import * as path from 'path';
 export function loadExamples(): void {
     decodePayloadFromSample();
 
-    const filePath = path.resolve(__dirname, '../../documentation/full-nexrad.json'); // Adjust path as needed
+    const exampleFiles: string[] = [
+        '../../documentation/full-nexrad.json',
+        '../../documentation/full-asa379.json',
+        '../../documentation/full-lots-nexrad.json',
+        '../../documentation/full-medley.json',
+        '../../documentation/full-more-nexrad.json',
+        '../../documentation/full-notams.json'
+    ];
 
-    try {
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const rawMessages: string[] = JSON.parse(fileContent);
+    for (const exampleFile of exampleFiles) {
 
-        const uat7Reports = rawMessages["last_msg"]["7"];
+        const filePath = path.resolve(__dirname, exampleFile);
 
-        for (const reportPackage of uat7Reports) {
-            const reportText: string = reportPackage["report"];
-            const byteStrings: string[] = `126,${reportText},126`.split(',');
-            const packageAscci: number[] = byteStrings.map(byteString => parseInt(byteString));
-            const rawMessage = String.fromCharCode(...packageAscci);
+        try {
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const rawMessages: string[] = JSON.parse(fileContent);
 
-            const gdl90Message = new Gdl90Message(rawMessage);
-            console.log(gdl90Message.decodedMessage);
+            const uat7Reports = rawMessages["last_msg"]["7"];
+
+            for (const reportPackage of uat7Reports) {
+                const reportText: string = reportPackage["report"];
+                const byteStrings: string[] = `126,${reportText},126`.split(',');
+                const packageAscci: number[] = byteStrings.map(byteString => parseInt(byteString));
+                const rawMessage = String.fromCharCode(...packageAscci);
+
+                const gdl90Message = new Gdl90Message(rawMessage);
+                console.log(gdl90Message.decodedMessage);
+            }
+        } catch (err) {
+            console.error('Error loading or parsing JSON file:', err);
         }
-    } catch (err) {
-        console.error('Error loading or parsing JSON file:', err);
     }
 }
 
