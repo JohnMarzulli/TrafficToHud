@@ -5,6 +5,7 @@ import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
 import { LogLevel } from "../logging-object";
 import { ReflectivityRadar, Reflectivity } from "../nexrad/reflectivity";
+import { decodeAirmet } from "./airmet";
 
 function getFisbProductName(
     productId: number
@@ -174,11 +175,26 @@ export class UatUplinkFrame {
 
             this.decodeNexradRegional(frame, isSouthernHemisphere);
         }
-        // AIRMET
-        else if (productId == 11) {
+        // NOTAM is 8
+        // AIRMET is 11
+        else if (productId == 8
+            || productId == 11
+            || productId == 12) {
+            monthday_valid = true;
+            seconds_valid = false;
+            month = (frame[2] & 0x78) >> 3;
+            day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+            hours = (frame[3] & 0x3e) >> 1;
+            minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+            length = frame.length - 5; // ???
+            data = frame.subarray(5);
+
+            decodeAirmet(data);
         }
-        // Textual METAR or TAF
-        else if (productId == 413) {
+        // SIGMET is 12
+        // Textual METAR or TAF is 413
+        else {
+            console.error(`Unable to decode productId=${productId}`);
         }
 
         switch (opt) {
@@ -283,11 +299,11 @@ function getReservedAndFrameType(
     const frameType = payload[1] & 0b00001111;
 
     if (reserved != 0) {
-        this.LogError(`Reserved field is not zero: ${reserved}`);
+        console.error(`Reserved field is not zero: ${reserved}`);
     }
 
     if (frameType != 0) {
-        this.LogError(`Frame type is not zero: ${frameType}`);
+        console.error(`Frame type is not zero: ${frameType}`);
     }
 
     return [reserved, frameType];
@@ -304,7 +320,7 @@ function getUplinkFrames(
 
         if (remainingBytes < 2 + frameLength) {
             if (frameLength > 0) {
-                this.LogError("Hit an overrun of the UAT application data while decoding Uplink message!");
+                console.error("Hit an overrun of the UAT application data while decoding Uplink message!");
             }
 
             break;
