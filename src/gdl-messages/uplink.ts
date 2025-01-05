@@ -68,11 +68,79 @@ export class UatUplinkFrame {
     public readonly frameType: number;
     public readonly frame: Uint8Array;
 
+    private decodeNexradRegional(
+        frame: Uint8Array,
+        isSouthernHemisphere: boolean
+    ) {
+        // NEXRAD description is on https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
+        // pg36
+        // FIS-B Spec: https://imlive.s3.amazonaws.com/Federal%20Government/ID133825730251125154988746465871038370/Attachment%205%20-%20SBS%20Essential%20Services%20System%20Specification_FAA-E-3006%20Rev.%20B%20dated%208-23-2019.pdf
+
+        const scaleFactor: number = frame[4] & 0x30;
+        const rleSet: boolean = (frame[4] & 0b10000000) != 0;
+        const globalBlockReferenceIdentifier = ((frame[4] & 0b00000111) << 16) | (frame[5] << 8) | frame[6];
+        const reflectivity: Uint8Array = frame.subarray(7);
+
+        // 0x4A570 = 123º 12' to 122º 24' West, 45º 04' to 45º 08' North
+        //
+        // 45.0666667, -123.205
+        // 45.1333333, -122.4
+        const boundaries: CoordinateBoundaries = getCoordinateBoundariesFromBlockReferenceId(globalBlockReferenceIdentifier, isSouthernHemisphere, scaleFactor);
+
+        /*
+        Each of the remaining bytes of the APDU encode the value of each of the 128 bins that comprise
+        this block (as 4 rows of 32 bins each). In each byte, the upper 5 bits represent the number of
+        sequential bins (minus 1) that each have the intensity value given in the lower 3 bits. The next
+        byte in the example data (0x30) indicates that the first 7 bins have Intensity value 0. The
+        following byte (0x89) indicates that the next 18 bins have Intensity value 1. The following byte
+        (0x50) indicates that the next 11 bins (the last 7 of the first row, plus the first 4 of the following
+        row) have Intensity value 0. 
+        */
+
+        let binCount = 0;
+        let bins: string[] = [];
+        for (let index in reflectivity) {
+            const apduByte = reflectivity[index];
+            const runCount = (apduByte >> 3) + 1;
+            const intensity = apduByte & 0b00000111;
+
+            for (let i = 0; i < runCount; i++) {
+                ++binCount;
+
+                const instensityToShow: string = intensity > 0 ? intensity.toString() : " ";
+                bins.push(instensityToShow);
+            }
+        }
+
+        console.log(`NEXRAD: blockReference=${globalBlockReferenceIdentifier}/0x${globalBlockReferenceIdentifier.toString(16).toUpperCase()}, rleSet=${rleSet}, binCount=${binCount}, scaleFactor=${scaleFactor}`);
+        console.log(`NEXRAD: between (${boundaries.minLatitude}, ${boundaries.minLongitude}) and ${boundaries.maxLatitude}, ${boundaries.maxLongitude}`);
+
+        while (bins.length > 0) {
+            const row = bins.splice(0, 32);
+            const displayRow = row.join("");
+
+            console.log(displayRow);
+        }
+    }
+
     constructor(
         reserved: number,
         frameType: number,
         frame: Uint8Array
     ) {
+        // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
+        // The element ID is SET which makes it Run Length Encoded.
+        // The block reference number is 0x4A570 in the North hemisphere.
+        // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
+        // Middle is -122.505005, 45.00275
+
+        // GPS minutes to decimal degrees:
+        // https://www.fcc.gov/media/radio/dms-decimal
+        //
+        // 0x4A570
+        // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
+        // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
+
         this.reserved = reserved;
         this.frameType = frameType;
         this.frame = frame;
@@ -91,72 +159,31 @@ export class UatUplinkFrame {
         let length: number = 0;
         let data: Uint8Array = null;
 
-        const aFlag: number = (frame[0] & 0x80) ? 1 : 0;
-        const gFlag: number = (frame[0] & 0x40) ? 1 : 0;
-        const pFlag: number = (frame[0] & 0x20) ? 1 : 0;
+        const aFlag: boolean = (frame[0] & 0x80) != 0;
+        const gFlag: boolean = (frame[0] & 0x40) != 0;
+        const pFlag: boolean = (frame[0] & 0x20) != 0;
         const productId: number = ((frame[0] & 0x1f) << 6) | (frame[1] >> 2);
-        const sFlag: number = (frame[1] & 0x02) ? 1 : 0;
+        const isSouthernHemisphere: boolean = (frame[1] & 0x02) != 0;
         const opt: number = ((this.frame[1] & 0x01) << 1) | ((this.frame[2] >> 7));
         let hours: number = (frame[2] & 0x7c) >> 2;
         let minutes: number = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         const padding = frame[3] & 0b00001111;
 
-        /*
-        // AIRMET may not have padding=0
-        if (padding != 0) {
-            console.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
-        }
-        */
-
-        console.log(`    FRAME: name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${sFlag}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
-
-        // NEXRAD description is on https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
-        // pg36
-        // FIS-B Spec: https://imlive.s3.amazonaws.com/Federal%20Government/ID133825730251125154988746465871038370/Attachment%205%20-%20SBS%20Essential%20Services%20System%20Specification_FAA-E-3006%20Rev.%20B%20dated%208-23-2019.pdf
+        console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
 
         // NEXRAD
         if (productId == 63) {
-            const rleSet: boolean = (frame[4] & 0b10000000) != 0;
-            const blockReference = ((frame[4] & 0b00000111) << 16) | (frame[5] << 8) | frame[6];
-            const graphics: Uint8Array = frame.subarray(7);
-
-            // 0x4A570 = 123º 12' to 122º 24' West, 45º 04' to 45º 08' North
-            const boundaries = decodeBlockId(blockReference);
-
-            /*
-            Each of the remaining bytes of the APDU encode the value of each of the 128 bins that comprise
-            this block (as 4 rows of 32 bins each). In each byte, the upper 5 bits represent the number of
-            sequential bins (minus 1) that each have the intensity value given in the lower 3 bits. The next
-            byte in the example data (0x30) indicates that the first 7 bins have Intensity value 0. The
-            following byte (0x89) indicates that the next 18 bins have Intensity value 1. The following byte
-            (0x50) indicates that the next 11 bins (the last 7 of the first row, plus the first 4 of the following
-            row) have Intensity value 0. 
-            */
-
-            let binCount = 0;
-            let bins: string[] = [];
-            for (let index in graphics) {
-                const apduByte = graphics[index];
-                const runCount = (apduByte >> 3) + 1;
-                const intensity = apduByte & 0b00000111;
-
-                for (let i = 0; i < runCount; i++) {
-                    ++binCount;
-
-                    const instensityToShow: string = intensity > 0 ? intensity.toString() : " ";
-                    bins.push(instensityToShow);
-                }
+            if (padding != 0) {
+                console.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
             }
-            // Block references may be in §A.3.2 of the FIS-B MOPS, RTCA DO-358A.
 
-            console.log(`NEXRAD: blockReference=${blockReference}/0x${blockReference.toString(16).toUpperCase()}, rleSet=${rleSet}, binCount=${binCount}`);
-
-            while (bins.length > 0) {
-                const row = bins.splice(0, 32);
-                const displayRow = row.join("");
-
-                console.log(displayRow);
-            }
+            this.decodeNexradRegional(frame, isSouthernHemisphere);
+        }
+        // AIRMET
+        else if (productId == 11) {
+        }
+        // Textual METAR or TAF
+        else if (productId == 413) {
         }
 
         switch (opt) {
@@ -346,17 +373,55 @@ interface CoordinateBoundaries {
     maxLongitude: number;
 }
 
-function decodeBlockId(blockId: number): CoordinateBoundaries {
-    // 0x4A570
-    // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
-    // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
-    const latCenter: number = (blockId / 450) * 0.0666666667; // (0x4A570 / 450)*0.0666666667 = 45.1 // This is +/-.0333333333 of the bounds set by the example!
-    const lonEdge: number = ((blockId % 450) * 0.8) - 360; // => ((0x4A570 % 450) * 0.8) - 360 = -123.19999999999999 which is the eastern edge?! 0.8 difference from the other edge?!?!
+const BlockWidth: number = (48.0 / 60.0);
+const WideBlockWidth: number = (96.0 / 60.0);
+const BlockHeight: number = (4.0 / 60.0);
+const BlockThreshold: number = 405000;
+const BlocksPerRing: number = 450;
 
-    const minLatitude: number = latCenter - 0.0333333333;
-    const maxLatitude: number = latCenter + 0.0333333333;
-    const minLongitude: number = lonEdge;
-    const maxLongitude: number = lonEdge + 0.8;
+/**
+ * Calculates the boundaries of the UAT uplink radar
+ * image based on the Block Reference Identifier.
+ * This is the block reference identifier that is referred to
+ * in the GDL90 spec, and is specified by RTCA DO-358A.
+ * @param blockReferenceIdentifier - the FIS-B block reference identifier
+ * @param isSouthernHemisphere - is the data from the Southern hemisphere?
+ * @param scaleFactor - Any scale factor transmitted in the original data frame.
+ * @returns - the corners of the radar image.
+ */
+function getCoordinateBoundariesFromBlockReferenceId(
+    blockReferenceIdentifier: number,
+    isSouthernHemisphere: boolean,
+    scaleFactor: number
+): CoordinateBoundaries {
+    // Code translated from Dump978/extract_nexrad.c
+    // Full explanation is found there.
+    //
+    // Full spec is in §A.3.2 of the FIS-B MOPS, RTCA DO-358A.
+
+    const scale = scaleFactor === 1
+        ? 5.0
+        : scaleFactor === 2
+            ? 9.0
+            : 1.0;
+
+    blockReferenceIdentifier = (blockReferenceIdentifier >= BlockThreshold)
+        ? blockReferenceIdentifier &= ~1
+        : blockReferenceIdentifier;
+
+    const rawLat: number = BlockHeight * Math.trunc(blockReferenceIdentifier / BlocksPerRing);
+    const rawLon: number = (blockReferenceIdentifier % BlocksPerRing) * BlockWidth;
+    const lonSize: number = (blockReferenceIdentifier >= BlockThreshold ? WideBlockWidth : BlockWidth) * scale;
+    const latSize: number = BlockHeight * scale;
+
+    // raw_lat/raw_lon points to the southwest corner in the northern hemisphere version
+    const minLongitude: number = rawLon - 360.0;
+    const minLatitude: number = isSouthernHemisphere
+        ? 0 - rawLat // southern hemisphere, mirror along the equator
+        : rawLat + BlockHeight; // adjust to the northwest corner
+
+    const maxLatitude: number = minLatitude - latSize;
+    const maxLongitude: number = minLongitude + lonSize;
 
     return {
         minLatitude,
@@ -377,33 +442,6 @@ export function decodePayloadFromSample() {
         if (graphic.length != frameLength) {
             console.error(`Frame length mismatch: ${graphic.length} != ${frameLength}`);
         }
-
-        // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
-        // The element ID is SET which makes it Run Length Encoded.
-        // The block reference number is 0x4A570 in the North hemisphere.
-        // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
-        // Middle is -122.505005, 45.00275
-
-        // GPS minutes to decimal degrees:
-        // https://www.fcc.gov/media/radio/dms-decimal
-        //
-        // 0x4A570
-        // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
-        // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
-
-        // 0x4AE3B
-        // 45° 0' 0"N, 123° 12' 18" W = 45.0000000, -123.205
-        // 45° 4' 0"N, 122° 24' 0" W = 45.0666667, -122.4
-
-        // https://github.com/digidocs/ads-b/blob/master/uat-decode/radar.py 
-
-        // blat = (block_num / 450)*0.0666666667 ?!?!?!?! => (0x4A570 / 450)*0.0666666667 = 45.1 // This is +/-.0333333333 of the bounds set by the example!
-        // blon = ((blockReference % 450) * 0.8) - 360 => ((0x4A570 % 450) * 0.8) - 360 = -123.19999999999999 which is the eastern edge?! 0.8 difference from the other edge?!?!
-
-        // 0x4C518 => binary 0000001001010010101110000
-        // 45 => binary  00101101
-        // 123 => binary 01111011
-        // 122 => binary 01111010
 
         const frameData: Uint8Array = payload.subarray(2, frameLength + 2);
         const decodedFrame = new UatUplinkFrame(0, frameType, frameData);
