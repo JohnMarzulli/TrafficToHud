@@ -8,6 +8,8 @@ import { TrafficClient } from "./traffic-client";
 import { StatusClient } from "./status-client";
 import { RadarClient } from "./radar-client";
 import { Gdl90Client } from "./gdl90-client";
+import { loadExamples } from "./gdl-messages/load-examples";
+import { ReflectivityRadar } from "./nexrad/reflectivity";
 
 /**
  * Service class that exposes the Traffic Client to the
@@ -83,6 +85,9 @@ class RestServer {
     this.express = express();
     this.middleware();
     this.routes();
+
+    // TODO: Remove this once initial integration testing is complete.
+    loadExamples();
   }
 
   // Configure Express middleware.
@@ -115,7 +120,8 @@ class RestServer {
       "/Radar/Status": RestServer.GetRadarStatus,
       "/Radar/Full": RestServer.GetRadarResponse,
       "/Gdl90/Status": RestServer.GetGdl90Status,
-      "/Gdl90/Full": RestServer.GetGdl90Response
+      "/Gdl90/Full": RestServer.GetGdl90Response,
+      "/Weather/Reflectivity": ReflectivityRadar.getReflectivity
     };
 
     Object.keys(mapping).forEach(key => {
