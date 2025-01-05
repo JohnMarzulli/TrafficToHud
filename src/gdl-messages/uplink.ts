@@ -1,7 +1,10 @@
-import { assert, Console, log } from "console";
-import { LogLevel } from "../logging-object";
+import { assert } from "console";
+import { CoordinateBoundaries } from "../types/boundaries";
+import { Coordinate } from "../types/coordinate";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
+import { LogLevel } from "../logging-object";
+import { ReflectivityRadar, Reflectivity } from "../nexrad/reflectivity";
 
 function getFisbProductName(
     productId: number
@@ -98,29 +101,21 @@ export class UatUplinkFrame {
         */
 
         let binCount = 0;
-        let bins: string[] = [];
+        let bins: number[] = [];
         for (let index in reflectivity) {
             const apduByte = reflectivity[index];
-            const runCount = (apduByte >> 3) + 1;
+            const runCount = rleSet ? (apduByte >> 3) + 1 : 1;
             const intensity = apduByte & 0b00000111;
 
             for (let i = 0; i < runCount; i++) {
                 ++binCount;
 
-                const instensityToShow: string = intensity > 0 ? intensity.toString() : " ";
-                bins.push(instensityToShow);
+                bins.push(intensity);
             }
         }
 
-        console.log(`NEXRAD: blockReference=${globalBlockReferenceIdentifier}/0x${globalBlockReferenceIdentifier.toString(16).toUpperCase()}, rleSet=${rleSet}, binCount=${binCount}, scaleFactor=${scaleFactor}`);
-        console.log(`NEXRAD: between (${boundaries.minLatitude}, ${boundaries.minLongitude}) and ${boundaries.maxLatitude}, ${boundaries.maxLongitude}`);
-
-        while (bins.length > 0) {
-            const row = bins.splice(0, 32);
-            const displayRow = row.join("");
-
-            console.log(displayRow);
-        }
+        const reflectivty: Reflectivity = new Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
+        ReflectivityRadar.addReflectivity(reflectivty);
     }
 
     constructor(
@@ -238,8 +233,7 @@ export class Uplink extends DecodedGdl90Message {
     public readonly timeOfReception: number;
     public readonly applicationHeader: Uint8Array;
     public readonly frames: UatUplinkFrame[] = [];
-    public readonly senderLat: number;
-    public readonly senderLon: number;
+    public readonly senderLocation: Coordinate;
 
     constructor(
         message: Gdl90Message
@@ -257,12 +251,10 @@ export class Uplink extends DecodedGdl90Message {
         let payload: Uint8Array = message.message.subarray(5).slice(0, 432);
 
         this.applicationHeader = payload.slice(0, 8);
-
-        [this.senderLat, this.senderLon] = decodeHeader(this.applicationHeader);
-
+        this.senderLocation = decodeHeader(this.applicationHeader);
         this.frames = getUplinkFrames(payload.slice(8));
 
-        this.LogSpew(`UAT UPLINK: lat=${this.senderLat}, long=${this.senderLon}, frameCount=${this.frames.length}`);
+        this.LogSpew(`UAT UPLINK: location=${this.senderLocation}, frameCount=${this.frames.length}`);
     }
 }
 
@@ -341,7 +333,7 @@ function getUplinkFrames(
 
 function decodeHeader(
     header: Uint8Array
-): [number, number] {
+): Coordinate {
     let lat: number = (header[0] << 15) | (header[1] << 7) | (header[2] >> 1);
     let lon: number = ((header[2] & 0x01) << 23) | (header[3] << 15) | (header[4] << 7) | (header[5] >> 1);
     lat = lat * 360.0 / 16777216.0;
@@ -352,7 +344,7 @@ function decodeHeader(
     const appDataValid: boolean = (header[6] & 0x20) != 0;
     assert(appDataValid);
 
-    return [lat, lon];
+    return new Coordinate(lon, lat);
 }
 
 function getPayloadFromSample(
@@ -366,12 +358,6 @@ function getPayloadFromSample(
     return payload;
 }
 
-interface CoordinateBoundaries {
-    minLatitude: number;
-    maxLatitude: number;
-    minLongitude: number;
-    maxLongitude: number;
-}
 
 const BlockWidth: number = (48.0 / 60.0);
 const WideBlockWidth: number = (96.0 / 60.0);
@@ -423,12 +409,14 @@ function getCoordinateBoundariesFromBlockReferenceId(
     const maxLatitude: number = minLatitude - latSize;
     const maxLongitude: number = minLongitude + lonSize;
 
-    return {
-        minLatitude,
-        maxLatitude,
-        minLongitude,
-        maxLongitude
-    };
+    const westernLongitude = minLongitude < maxLatitude ? minLongitude : maxLongitude;
+    const easternLongitude = minLongitude < maxLatitude ? maxLongitude : minLongitude;
+    const northernLattitude = maxLatitude > minLatitude ? maxLatitude : minLatitude;
+    const southernLattitude = maxLatitude > minLatitude ? minLatitude : maxLatitude;
+
+    return new CoordinateBoundaries(
+        new Coordinate(westernLongitude, northernLattitude),
+        new Coordinate(easternLongitude, southernLattitude));
 }
 
 export function decodePayloadFromSample() {
