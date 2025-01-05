@@ -3,14 +3,13 @@ import { decodePayloadFromSample } from './uplink'; // Assuming decodePayloadFro
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Main execution
-(async function main() {
+export function loadExamples(): void {
     decodePayloadFromSample();
 
     const filePath = path.resolve(__dirname, '../../documentation/full-nexrad.json'); // Adjust path as needed
 
     try {
-        const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
         const rawMessages: string[] = JSON.parse(fileContent);
 
         const uat7Reports = rawMessages["last_msg"]["7"];
@@ -27,4 +26,9 @@ import * as path from 'path';
     } catch (err) {
         console.error('Error loading or parsing JSON file:', err);
     }
+}
+
+// Main execution
+(async function main() {
+    loadExamples();
 })();
