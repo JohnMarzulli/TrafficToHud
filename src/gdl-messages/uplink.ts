@@ -7,6 +7,12 @@ import { LogLevel } from "../logging-object";
 import { ReflectivityRadar, Reflectivity } from "../nexrad/reflectivity";
 import { decodeAirmet } from "./airmet";
 
+// References:
+// https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
+// https://phd-sid.ethz.ch/debian/stratux/stratux-1.5b2/notes/SBS-Description-Doc_SRT_47_rev01_20111024.pdf
+// https://www.faa.gov/documentLibrary/media/Advisory_Circular/AC_20-149B.pdf
+// https://www.faa.gov/documentlibrary/media/advisory_circular/ac_00-45h.pdf
+
 function getFisbProductName(
     productId: number
 ) {
