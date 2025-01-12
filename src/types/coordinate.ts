@@ -1,20 +1,20 @@
 export class Coordinate {
-    public readonly longtitude: number;
+    public readonly longitude: number;
     public readonly latitude: number;
 
     public toString(): string {
-        return `[lon=${this.longtitude}, lat=${this.latitude}]`;
+        return `[lon=${this.longitude}, lat=${this.latitude}]`;
     }
 
     public constructor(
-        longtitude: number,
+        longitude: number,
         latitude: number
     ) {
-        if (longtitude > 180) {
-            longtitude -= 360;
+        if (longitude > 180) {
+            longitude -= 360;
         }
 
-        this.longtitude = longtitude;
+        this.longitude = longitude;
         this.latitude = latitude;
     }
 }
