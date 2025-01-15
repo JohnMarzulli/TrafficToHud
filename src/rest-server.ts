@@ -87,7 +87,7 @@ class RestServer {
     this.routes();
 
     // TODO: Remove this once initial integration testing is complete.
-    loadExamples();
+    // loadExamples();
   }
 
   // Configure Express middleware.
