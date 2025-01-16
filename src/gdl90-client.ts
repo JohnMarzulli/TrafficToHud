@@ -107,6 +107,6 @@ export class Gdl90Client extends SocketClient {
     let preparedString: string = base64.replace('"', '');
     preparedString = preparedString.replace('"', '');
 
-    return atob(preparedString);
+    return Buffer.from(preparedString, "base64").toString();
   }
 }
