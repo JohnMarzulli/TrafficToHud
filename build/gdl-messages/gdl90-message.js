@@ -1,0 +1,76 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getDecodedMessage = exports.Gdl90Message = void 0;
+var DataHandling = require("../data_handling");
+var basic_report_1 = require("./basic-report");
+var gdl90_heartbeat_1 = require("./gdl90-heartbeat");
+var long_report_1 = require("./long-report");
+var ownship_1 = require("./ownship");
+var ownship_ahrs_1 = require("./ownship-ahrs");
+var ownship_altitude_1 = require("./ownship-altitude");
+var ownship_details_1 = require("./ownship-details");
+var stratux_heartbeat_1 = require("./stratux-heartbeat");
+var stratux_status_1 = require("./stratux-status");
+var traffic_1 = require("./traffic");
+var uplink_1 = require("./uplink");
+var Gdl90Message = /** @class */ (function () {
+    function Gdl90Message(raw_message) {
+        this.receivedAt = Date.now();
+        this.rawMessage = raw_message.trim();
+        this.message = DataHandling.unescapeData(DataHandling.getBytes(this.rawMessage));
+        this.messageType = Number(this.message[1].toString());
+        this.decodedMessage = getDecodedMessage(this);
+    }
+    Gdl90Message.prototype.getChecksumAndExpected = function (data) {
+        var dataToCalculate = data.slice(0);
+        if (dataToCalculate[0] == 126) {
+            dataToCalculate = dataToCalculate.slice(1);
+        }
+        if (dataToCalculate[dataToCalculate.length - 1] == 126) {
+            dataToCalculate = dataToCalculate.slice(0, -1);
+        }
+        var found = DataHandling.calculateChecksum(dataToCalculate);
+        var expected = dataToCalculate[dataToCalculate.length - 1];
+        var length = dataToCalculate.length;
+        return [found, expected, length];
+    };
+    Gdl90Message.prototype.compareBytes = function (rawData, unescapedData) {
+        if (rawData.length !== unescapedData.length) {
+            return false;
+        }
+        for (var i = 0; i < rawData.length; i++) {
+            if (rawData[i] !== unescapedData[i]) {
+                return false;
+            }
+        }
+        return true;
+    };
+    return Gdl90Message;
+}());
+exports.Gdl90Message = Gdl90Message;
+function getDecodedMessage(message) {
+    var constructorMap = {
+        0: gdl90_heartbeat_1.Gdl90Heartbeat,
+        10: ownship_1.Ownship,
+        11: ownship_altitude_1.OwnshipAltitude,
+        20: traffic_1.Traffic,
+        204: stratux_heartbeat_1.StratuxHeartbeat,
+        30: basic_report_1.BasicReport,
+        31: long_report_1.LongReport,
+        7: uplink_1.Uplink,
+        83: stratux_status_1.StratuxStatus
+    };
+    if (message.messageType == 101) {
+        var subType = message.message[2];
+        return subType == 0
+            ? new ownship_details_1.OwnshipDetails(message)
+            : new ownship_ahrs_1.OwnshipAhrs(message);
+    }
+    if (message.messageType in constructorMap) {
+        return new constructorMap[message.messageType](message);
+    }
+    this.LogError("UNKNOWN MSG:" + message.messageType + " - " + message.message);
+    return null;
+}
+exports.getDecodedMessage = getDecodedMessage;
+//# sourceMappingURL=gdl90-message.js.map
