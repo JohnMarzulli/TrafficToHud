@@ -1,4 +1,4 @@
-function dlacDecode(data: Uint8Array): string {
+export function dlacDecode(data: Uint8Array): string {
     const dlacAlpha: string = "\x03ABCDEFGHIJKLMNOPQRSTUVWXYZ\x1A\t\x1E\n| !\"#$%&'()*+,-./0123456789:;<=>?";
 
     let step: number = 0;
@@ -44,6 +44,14 @@ function dlacDecode(data: Uint8Array): string {
     return ret;
 }
 
+export function decodeGenericText(
+    data: Uint8Array
+) {
+    const text_data: string = dlacDecode(data);
+
+    console.log(`    GENERIC TEXT: text_data=${text_data}`);
+}
+
 export function decodeAirmet(
     data: Uint8Array
 ) {
@@ -67,6 +75,10 @@ export function decodeAirmet(
         const text_data: string = dlacDecode(data.subarray(11, 11 + text_data_len - 1));
 
         console.log(`    AIRMET: record_format=${record_format}, product_version=${product_version}, record_count=${record_count}, location_identifier=${location_identifier}, record_reference=${record_reference}, record_length=${record_length}, report_number=${report_number}, report_year=${report_year}, report_status=${report_status}, text_data_len=${text_data_len}, text_data=${text_data}`);
+    }
+    else
+    {
+        console.error(`Unknown format=${record_format}`);
     }
 
     console.log(`    AIRMET: record_format=${record_format}, product_version=${product_version}, record_count=${record_count}, location_identifier=${location_identifier}, record_reference=${record_reference}`);

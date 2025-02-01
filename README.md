@@ -28,6 +28,18 @@ These installation steps are intended for developers or those who wish to instal
 npm install
 ```
 
+### Issues With Node
+
+On Bookworm, 18 appears to be the most recent version.
+
+First NodeJS and npm must be uninstalled using `apt`, then:
+
+```bash
+npm install
+sudo npm install -g typescript
+```
+
+
 ### Revision History
 
 | Date       | Version   | Major Changes                                                        |

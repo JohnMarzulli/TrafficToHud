@@ -15,6 +15,8 @@ sudo npm install
 ```
 
 ```
+sudo npm install -g typescript
+
 tsc; node ./build/traffic_manager.js
 ```
 

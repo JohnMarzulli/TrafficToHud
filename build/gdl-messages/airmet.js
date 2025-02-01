@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.decodeAirmet = void 0;
+exports.decodeAirmet = exports.decodeGenericText = exports.dlacDecode = void 0;
 function dlacDecode(data) {
     var dlacAlpha = "\x03ABCDEFGHIJKLMNOPQRSTUVWXYZ\x1A\t\x1E\n| !\"#$%&'()*+,-./0123456789:;<=>?";
     var step = 0;
@@ -40,6 +40,12 @@ function dlacDecode(data) {
     }
     return ret;
 }
+exports.dlacDecode = dlacDecode;
+function decodeGenericText(data) {
+    var text_data = dlacDecode(data);
+    console.log("    GENERIC TEXT: text_data=" + text_data);
+}
+exports.decodeGenericText = decodeGenericText;
 function decodeAirmet(data) {
     var record_format = ((data[0]) & 0xF0) >> 4;
     var product_version = ((data[0]) & 0x0F);
@@ -59,6 +65,9 @@ function decodeAirmet(data) {
         var text_data_len = record_length - 5;
         var text_data = dlacDecode(data.subarray(11, 11 + text_data_len - 1));
         console.log("    AIRMET: record_format=" + record_format + ", product_version=" + product_version + ", record_count=" + record_count + ", location_identifier=" + location_identifier + ", record_reference=" + record_reference + ", record_length=" + record_length + ", report_number=" + report_number + ", report_year=" + report_year + ", report_status=" + report_status + ", text_data_len=" + text_data_len + ", text_data=" + text_data);
+    }
+    else {
+        console.error("Unknown format=" + record_format);
     }
     console.log("    AIRMET: record_format=" + record_format + ", product_version=" + product_version + ", record_count=" + record_count + ", location_identifier=" + location_identifier + ", record_reference=" + record_reference);
 }

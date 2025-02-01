@@ -140,6 +140,7 @@ var UatUplinkFrame = /** @class */ (function () {
         }
         // NOTAM is 8
         // AIRMET is 11
+        // SIGMET is 12
         else if (productId == 8
             || productId == 11
             || productId == 12) {
@@ -153,9 +154,22 @@ var UatUplinkFrame = /** @class */ (function () {
             data = frame.subarray(5);
             airmet_1.decodeAirmet(data);
         }
-        // SIGMET is 12
+        else if (productId == 19) { // Very unknown. No guess
+        }
         // Textual METAR or TAF is 413
+        else if (productId == 405 || productId == 413) {
+            airmet_1.decodeGenericText(frame.subarray(4));
+        }
+        else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
+        }
+        else if (productId == 1037) { // some sort of mixed text and graphical product 
+        }
         else {
+            /*
+            for (let offset = 0; ++offset; offset < length) {
+                decodeGenericText(frame.subarray(offset));
+            }
+            */
             console.error("Unable to decode productId=" + productId);
         }
         switch (opt) {
