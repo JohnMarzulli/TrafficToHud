@@ -69,7 +69,7 @@ function getDecodedMessage(message) {
     if (message.messageType in constructorMap) {
         return new constructorMap[message.messageType](message);
     }
-    this.LogError("UNKNOWN MSG:" + message.messageType + " - " + message.message);
+    console.error("UNKNOWN MSG:" + message.messageType + " - " + message.message);
     return null;
 }
 exports.getDecodedMessage = getDecodedMessage;

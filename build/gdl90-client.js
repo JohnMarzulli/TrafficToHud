@@ -96,7 +96,7 @@ var Gdl90Client = /** @class */ (function (_super) {
         // Decode the Base64 string
         var preparedString = base64.replace('"', '');
         preparedString = preparedString.replace('"', '');
-        return atob(preparedString);
+        return Buffer.from(preparedString, "base64").toString();
     };
     return Gdl90Client;
 }(socket_client_1.SocketClient));
