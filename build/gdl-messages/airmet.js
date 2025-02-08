@@ -44,6 +44,7 @@ exports.dlacDecode = dlacDecode;
 function decodeGenericText(data) {
     var text_data = dlacDecode(data);
     console.log("    GENERIC TEXT: text_data=" + text_data);
+    return text_data;
 }
 exports.decodeGenericText = decodeGenericText;
 function decodeAirmet(data) {
@@ -65,11 +66,13 @@ function decodeAirmet(data) {
         var text_data_len = record_length - 5;
         var text_data = dlacDecode(data.subarray(11, 11 + text_data_len - 1));
         console.log("    AIRMET: record_format=" + record_format + ", product_version=" + product_version + ", record_count=" + record_count + ", location_identifier=" + location_identifier + ", record_reference=" + record_reference + ", record_length=" + record_length + ", report_number=" + report_number + ", report_year=" + report_year + ", report_status=" + report_status + ", text_data_len=" + text_data_len + ", text_data=" + text_data);
+        return text_data;
     }
     else {
         console.error("Unknown format=" + record_format);
     }
     console.log("    AIRMET: record_format=" + record_format + ", product_version=" + product_version + ", record_count=" + record_count + ", location_identifier=" + location_identifier + ", record_reference=" + record_reference);
+    return null;
 }
 exports.decodeAirmet = decodeAirmet;
 //# sourceMappingURL=airmet.js.map

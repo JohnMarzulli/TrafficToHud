@@ -9,7 +9,8 @@ var traffic_client_1 = require("./traffic-client");
 var status_client_1 = require("./status-client");
 var radar_client_1 = require("./radar-client");
 var gdl90_client_1 = require("./gdl90-client");
-var reflectivity_1 = require("./nexrad/reflectivity");
+var nexrad_1 = require("./weather/nexrad");
+var text_products_1 = require("./weather/text-products");
 /**
  * Service class that exposes the Traffic Client to the
  * rest of the world as a RESTful API.
@@ -103,7 +104,8 @@ var RestServer = /** @class */ (function () {
             "/Radar/Full": RestServer.GetRadarResponse,
             "/Gdl90/Status": RestServer.GetGdl90Status,
             "/Gdl90/Full": RestServer.GetGdl90Response,
-            "/Weather/Reflectivity": reflectivity_1.ReflectivityRadar.getReflectivity
+            "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
+            "/Weather/TextReports": text_products_1.TextReports.getReports
         };
         Object.keys(mapping).forEach(function (key) {
             router.get(key, function (req, res, next) {

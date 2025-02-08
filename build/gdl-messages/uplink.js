@@ -19,8 +19,9 @@ var boundaries_1 = require("../types/boundaries");
 var coordinate_1 = require("../types/coordinate");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
 var logging_object_1 = require("../logging-object");
-var reflectivity_1 = require("../nexrad/reflectivity");
+var nexrad_1 = require("../weather/nexrad");
 var airmet_1 = require("./airmet");
+var text_products_1 = require("../weather/text-products");
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
 // https://phd-sid.ethz.ch/debian/stratux/stratux-1.5b2/notes/SBS-Description-Doc_SRT_47_rev01_20111024.pdf
@@ -152,13 +153,15 @@ var UatUplinkFrame = /** @class */ (function () {
             minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
             length = frame.length - 5; // ???
             data = frame.subarray(5);
-            airmet_1.decodeAirmet(data);
+            var report = airmet_1.decodeAirmet(data);
+            text_products_1.TextReports.addReport(new text_products_1.TextReport(report));
         }
         else if (productId == 19) { // Very unknown. No guess
         }
         // Textual METAR or TAF is 413
         else if (productId == 405 || productId == 413) {
-            airmet_1.decodeGenericText(frame.subarray(4));
+            var report = airmet_1.decodeGenericText(frame.subarray(4));
+            text_products_1.TextReports.addReport(new text_products_1.TextReport(report));
         }
         else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
         }
@@ -251,8 +254,8 @@ var UatUplinkFrame = /** @class */ (function () {
                 bins.push(intensity);
             }
         }
-        var reflectivty = new reflectivity_1.Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
-        reflectivity_1.ReflectivityRadar.addReport(reflectivty);
+        var newReflectivity = new nexrad_1.Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
+        nexrad_1.ReflectivityRadar.addReport(newReflectivity);
     };
     return UatUplinkFrame;
 }());

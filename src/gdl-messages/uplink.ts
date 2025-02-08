@@ -4,8 +4,9 @@ import { Coordinate } from "../types/coordinate";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
 import { LogLevel } from "../logging-object";
-import { ReflectivityRadar, Reflectivity } from "../nexrad/reflectivity";
+import { ReflectivityRadar, Reflectivity } from "../weather/nexrad";
 import { decodeAirmet, decodeGenericText } from "./airmet";
+import { TextReport, TextReports } from "../weather/text-products";
 
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
@@ -121,8 +122,8 @@ export class UatUplinkFrame {
             }
         }
 
-        const reflectivty: Reflectivity = new Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
-        ReflectivityRadar.addReport(reflectivty);
+        const newReflectivity: Reflectivity = new Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
+        ReflectivityRadar.addReport(newReflectivity);
     }
 
     constructor(
@@ -196,13 +197,16 @@ export class UatUplinkFrame {
             length = frame.length - 5; // ???
             data = frame.subarray(5);
 
-            decodeAirmet(data);
+            const report: string = decodeAirmet(data);
+            TextReports.addReport(new TextReport(report));
         }
         else if (productId == 19) {// Very unknown. No guess
         }
         // Textual METAR or TAF is 413
         else if (productId == 405 || productId == 413) {
-            decodeGenericText(frame.subarray(4));
+            const report: string = decodeGenericText(frame.subarray(4));
+
+            TextReports.addReport(new TextReport(report));
         }
         else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
         }

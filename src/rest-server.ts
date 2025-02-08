@@ -9,7 +9,8 @@ import { StatusClient } from "./status-client";
 import { RadarClient } from "./radar-client";
 import { Gdl90Client } from "./gdl90-client";
 import { loadExamples } from "./gdl-messages/load-examples";
-import { ReflectivityRadar } from "./nexrad/reflectivity";
+import { ReflectivityRadar } from "./weather/nexrad";
+import { TextReports } from "./weather/text-products";
 
 /**
  * Service class that exposes the Traffic Client to the
@@ -121,7 +122,8 @@ class RestServer {
       "/Radar/Full": RestServer.GetRadarResponse,
       "/Gdl90/Status": RestServer.GetGdl90Status,
       "/Gdl90/Full": RestServer.GetGdl90Response,
-      "/Weather/Reflectivity": ReflectivityRadar.getReflectivity
+      "/Weather/Reflectivity": ReflectivityRadar.getReflectivity,
+      "/Weather/TextReports": TextReports.getReports
     };
 
     Object.keys(mapping).forEach(key => {

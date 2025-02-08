@@ -46,15 +46,17 @@ export function dlacDecode(data: Uint8Array): string {
 
 export function decodeGenericText(
     data: Uint8Array
-) {
+): string {
     const text_data: string = dlacDecode(data);
 
     console.log(`    GENERIC TEXT: text_data=${text_data}`);
+
+    return text_data;
 }
 
 export function decodeAirmet(
     data: Uint8Array
-) {
+): string | null {
     const record_format: number = ((data[0]) & 0xF0) >> 4;
     const product_version: number = ((data[0]) & 0x0F);
     const record_count: number = ((data[1]) & 0xF0) >> 4;
@@ -75,11 +77,14 @@ export function decodeAirmet(
         const text_data: string = dlacDecode(data.subarray(11, 11 + text_data_len - 1));
 
         console.log(`    AIRMET: record_format=${record_format}, product_version=${product_version}, record_count=${record_count}, location_identifier=${location_identifier}, record_reference=${record_reference}, record_length=${record_length}, report_number=${report_number}, report_year=${report_year}, report_status=${report_status}, text_data_len=${text_data_len}, text_data=${text_data}`);
+
+        return text_data;
     }
-    else
-    {
+    else {
         console.error(`Unknown format=${record_format}`);
     }
 
     console.log(`    AIRMET: record_format=${record_format}, product_version=${product_version}, record_count=${record_count}, location_identifier=${location_identifier}, record_reference=${record_reference}`);
+
+    return null;
 }
