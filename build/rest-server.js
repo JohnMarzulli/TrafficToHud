@@ -2,13 +2,13 @@
 // Shamelessly borrowed from https://mherman.org/blog/developing-a-restful-api-with-node-and-typescript/
 // https://stackoverflow.com/questions/38802959/how-to-lock-on-object-which-shared-by-multiple-async-method-in-nodejs
 Object.defineProperty(exports, "__esModule", { value: true });
+var bodyParser = require("body-parser");
 var express = require("express");
 var logger = require("morgan");
-var bodyParser = require("body-parser");
-var traffic_client_1 = require("./traffic-client");
-var status_client_1 = require("./status-client");
-var radar_client_1 = require("./radar-client");
 var gdl90_client_1 = require("./gdl90-client");
+var radar_client_1 = require("./radar-client");
+var status_client_1 = require("./status-client");
+var traffic_client_1 = require("./traffic-client");
 var nexrad_1 = require("./weather/nexrad");
 var text_products_1 = require("./weather/text-products");
 /**
@@ -27,8 +27,6 @@ var RestServer = /** @class */ (function () {
         this.express = express();
         this.middleware();
         this.routes();
-        // TODO: Remove this once initial integration testing is complete.
-        // loadExamples();
     }
     // Making the sockets static and then having static handlers is
     // a horrific side effect of TS/JS and the object model it uses.

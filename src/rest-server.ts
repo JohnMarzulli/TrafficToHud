@@ -1,14 +1,13 @@
 // Shamelessly borrowed from https://mherman.org/blog/developing-a-restful-api-with-node-and-typescript/
 // https://stackoverflow.com/questions/38802959/how-to-lock-on-object-which-shared-by-multiple-async-method-in-nodejs
 
+import * as bodyParser from "body-parser";
 import * as express from "express";
 import * as logger from "morgan";
-import * as bodyParser from "body-parser";
-import { TrafficClient } from "./traffic-client";
-import { StatusClient } from "./status-client";
-import { RadarClient } from "./radar-client";
 import { Gdl90Client } from "./gdl90-client";
-import { loadExamples } from "./gdl-messages/load-examples";
+import { RadarClient } from "./radar-client";
+import { StatusClient } from "./status-client";
+import { TrafficClient } from "./traffic-client";
 import { ReflectivityRadar } from "./weather/nexrad";
 import { TextReports } from "./weather/text-products";
 
@@ -86,9 +85,6 @@ class RestServer {
     this.express = express();
     this.middleware();
     this.routes();
-
-    // TODO: Remove this once initial integration testing is complete.
-    // loadExamples();
   }
 
   // Configure Express middleware.
