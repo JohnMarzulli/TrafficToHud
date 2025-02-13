@@ -6,6 +6,7 @@ var bodyParser = require("body-parser");
 var express = require("express");
 var logger = require("morgan");
 var gdl90_client_1 = require("./gdl90-client");
+var airports = require("./locations/airports");
 var radar_client_1 = require("./radar-client");
 var status_client_1 = require("./status-client");
 var traffic_client_1 = require("./traffic-client");
@@ -27,6 +28,7 @@ var RestServer = /** @class */ (function () {
         this.express = express();
         this.middleware();
         this.routes();
+        airports.loadAirports();
     }
     // Making the sockets static and then having static handlers is
     // a horrific side effect of TS/JS and the object model it uses.

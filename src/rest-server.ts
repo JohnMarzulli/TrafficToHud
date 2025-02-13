@@ -5,6 +5,7 @@ import * as bodyParser from "body-parser";
 import * as express from "express";
 import * as logger from "morgan";
 import { Gdl90Client } from "./gdl90-client";
+import * as airports from "./locations/airports";
 import { RadarClient } from "./radar-client";
 import { StatusClient } from "./status-client";
 import { TrafficClient } from "./traffic-client";
@@ -85,6 +86,8 @@ class RestServer {
     this.express = express();
     this.middleware();
     this.routes();
+
+    airports.loadAirports();
   }
 
   // Configure Express middleware.
