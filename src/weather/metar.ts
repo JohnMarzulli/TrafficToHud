@@ -1,6 +1,6 @@
 "use strict";
 
-import assert = require("assert");
+import * as assert from 'assert';
 
 const unknown: string = "Unknown";
 
