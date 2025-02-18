@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Metar = exports.FlightRules = void 0;
+exports.getReport = exports.addReport = exports.Metar = exports.FlightRules = void 0;
 var assert = require("assert");
 var unknown = "Unknown";
 /**
@@ -37,10 +37,35 @@ var Metar = /** @class */ (function () {
         this.metar = report.trim();
         this.station = getStation(this.metar);
         this.flightRules = getFlightRules(this.metar);
+        // TODO: Add a report time so we can prune this.
     }
     return Metar;
 }());
 exports.Metar = Metar;
+/**
+ * Add a report to the current known metars.
+ * @param report The report to add.
+ */
+function addReport(report) {
+    metars[report.station] = report;
+    // TODO: Prune these reports based on age.
+}
+exports.addReport = addReport;
+/**
+ * Get any reports for the given station/
+ * @param station The station to get the metar for.
+ * @returns The report, if any were found. Otherwise returns `null`.
+ */
+function getReport(station) {
+    try {
+        return metars[station.trim().toUpperCase()];
+    }
+    catch (_a) {
+        return null;
+    }
+}
+exports.getReport = getReport;
+var metars = {};
 function getFlightRules(metar) {
     var vis = getVisibilityCategory(metar);
     var ceiling = getCeilingCategory(metar);
@@ -205,8 +230,20 @@ function runCategoryTests() {
     assert.strictEqual(getFlightRules('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.mvfr);
     console.log("All category tests passed!");
 }
+function runAddReportTests() {
+    var initialReport = 'KRNT 132053Z 33010KT 10SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165';
+    addReport(new Metar(initialReport));
+    var idents = ['KRNT', 'Krnt', 'krnt'];
+    for (var _i = 0, idents_1 = idents; _i < idents_1.length; _i++) {
+        var ident = idents_1[_i];
+        var foundReport = getReport(ident);
+        assert.strictEqual(foundReport.metar, initialReport);
+    }
+    console.log("All report adding & fetching tests passed!");
+}
 runVisbilityTests();
 runCeilingTests();
 runStationTests();
 runCategoryTests();
+runAddReportTests();
 //# sourceMappingURL=metar.js.map

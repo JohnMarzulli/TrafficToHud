@@ -64,8 +64,35 @@ export class Metar {
         this.metar = report.trim();
         this.station = getStation(this.metar);
         this.flightRules = getFlightRules(this.metar);
+        // TODO: Add a report time so we can prune this.
     }
 }
+
+/**
+ * Add a report to the current known metars.
+ * @param report The report to add.
+ */
+export function addReport(report: Metar): void {
+    metars[report.station] = report;
+
+    // TODO: Prune these reports based on age.
+}
+
+/**
+ * Get any reports for the given station/
+ * @param station The station to get the metar for.
+ * @returns The report, if any were found. Otherwise returns `null`.
+ */
+export function getReport(station: string): Metar | null {
+    try {
+        return metars[station.trim().toUpperCase()];
+    }
+    catch {
+        return null;
+    }
+}
+
+const metars: { [key: string]: Metar; } = {};
 
 function getFlightRules(
     metar: string
@@ -274,7 +301,22 @@ function runCategoryTests() {
     console.log("All category tests passed!");
 }
 
+function runAddReportTests() {
+    const initialReport: string = 'KRNT 132053Z 33010KT 10SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165';
+    addReport(new Metar(initialReport));
+
+    const idents: string[] = ['KRNT', 'Krnt', 'krnt'];
+
+    for (const ident of idents) {
+        const foundReport: Metar = getReport(ident);
+        assert.strictEqual(foundReport.metar, initialReport);
+    }
+
+    console.log("All report adding & fetching tests passed!");
+}
+
 runVisbilityTests();
 runCeilingTests();
 runStationTests();
 runCategoryTests();
+runAddReportTests();

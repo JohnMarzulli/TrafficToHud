@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TextReport = exports.TextReports = void 0;
+var metar = require("./metar");
 var TextReports = /** @class */ (function () {
     function TextReports() {
     }
@@ -63,6 +64,9 @@ var TextReport = /** @class */ (function () {
                 textReport = textReport.slice(0, separatorIndex);
             }
             this.report = textReport;
+            if (this.reportType === ReportType.Metar) {
+                metar.addReport(new metar.Metar(textReport));
+            }
         }
     }
     TextReport.prototype.getReportAgeSeconds = function () {

@@ -1,3 +1,7 @@
+"use strict";
+
+import * as metar from './metar';
+
 export class TextReports {
     private static MaxReportAgeSeconds = 60 * 60;
     private static reports: TextReport[] = [];
@@ -85,6 +89,10 @@ export class TextReport {
             }
 
             this.report = textReport;
+
+            if (this.reportType === ReportType.Metar) {
+                metar.addReport(new metar.Metar(textReport));
+            }
         }
     }
 
