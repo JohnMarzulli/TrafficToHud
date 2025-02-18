@@ -122,7 +122,8 @@ class RestServer {
       "/Gdl90/Status": RestServer.GetGdl90Status,
       "/Gdl90/Full": RestServer.GetGdl90Response,
       "/Weather/Reflectivity": ReflectivityRadar.getReflectivity,
-      "/Weather/TextReports": TextReports.getReports
+      "/Weather/TextReports": TextReports.getReports,
+      "/airports/Airports": airports.getAirports
     };
 
     Object.keys(mapping).forEach(key => {

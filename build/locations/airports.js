@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadAirports = exports.getAirports = void 0;
+var assert = require("assert");
 var fs = require("fs");
 var path = require("path");
 var distance_1 = require("../geography/distance");
@@ -12,14 +13,20 @@ var coordinate_1 = require("../types/coordinate");
  * @returns A list of any airports within the given radius of the given location.
  */
 function getAirports(req) {
-    var url = new URL(req.url);
-    var queryParams = new URLSearchParams(url.search);
-    // Get the value of the specified parameter
-    var lat = parseFloat(queryParams.get("lat"));
-    var lon = parseFloat(queryParams.get("lon"));
-    var distance = parseFloat(queryParams.get("distance"));
-    var location = new coordinate_1.Coordinate(lon, lat);
-    return getAirportsWithinDistance(location, distance);
+    try {
+        var host = "http://" + req.headers['host'];
+        var fullUrl = new URL(req.url, host);
+        var queryParams = new URLSearchParams(fullUrl.search);
+        // Get the value of the specified parameter
+        var lat = parseFloat(queryParams.get("lat"));
+        var lon = parseFloat(queryParams.get("lon"));
+        var distance = parseFloat(queryParams.get("dist"));
+        var location_1 = new coordinate_1.Coordinate(lon, lat);
+        return getAirportsWithinDistance(location_1, distance);
+    }
+    catch (_a) {
+        return [];
+    }
 }
 exports.getAirports = getAirports;
 /**
@@ -38,8 +45,8 @@ function loadAirports() {
             continue;
         }
         var tokens = line.split(',');
-        var lat = parseFloat(tokens[0]);
-        var lon = parseFloat(tokens[1]);
+        var lat = parseFloat(tokens[1]);
+        var lon = parseFloat(tokens[0]);
         var ident = tokens[4].trim();
         var airportName = tokens[5].trim();
         var icao = tokens[9].trim();
@@ -59,10 +66,31 @@ exports.loadAirports = loadAirports;
  * @returns Any airports found within the given distance.
  */
 function getAirportsWithinDistance(location, distance) {
-    return airports.filter(function (airport) {
-        return distance_1.getDistance(location, airport.coordinates) <= distance;
+    var foundAirports = airports
+        .filter(function (airport) { return airport.airportType === "AD"; })
+        .filter(function (airport) {
+        var foundDistance = distance_1.getDistance(location, airport.coordinates);
+        return foundDistance <= distance;
     });
+    return foundAirports;
 }
 var airports = [];
 var airportsByIdent = new Map();
+function hasAirport(airports, ident) {
+    return airports.filter(function (airport) { return airport.ident === ident; }).length >= 1;
+}
+function testGetAirportsByDistance() {
+    loadAirports();
+    var foundAirports = getAirportsWithinDistance(new coordinate_1.Coordinate(-122.15, 48.16), 20.0);
+    assert.strictEqual(foundAirports.length, 12);
+    assert.strictEqual(hasAirport(foundAirports, "KAWO"), true);
+    assert.strictEqual(hasAirport(foundAirports, "KPAE"), true);
+    assert.strictEqual(hasAirport(foundAirports, "W10"), true);
+    assert.strictEqual(hasAirport(foundAirports, "S43"), true);
+    assert.strictEqual(hasAirport(foundAirports, "W10"), true);
+    assert.strictEqual(hasAirport(foundAirports, "SEA"), false);
+    assert.strictEqual(hasAirport(foundAirports, "BVS"), false);
+    console.log("Passed airport search tests.");
+}
+testGetAirportsByDistance();
 //# sourceMappingURL=airports.js.map

@@ -105,7 +105,8 @@ var RestServer = /** @class */ (function () {
             "/Gdl90/Status": RestServer.GetGdl90Status,
             "/Gdl90/Full": RestServer.GetGdl90Response,
             "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
-            "/Weather/TextReports": text_products_1.TextReports.getReports
+            "/Weather/TextReports": text_products_1.TextReports.getReports,
+            "/airports/Airports": airports.getAirports
         };
         Object.keys(mapping).forEach(function (key) {
             router.get(key, function (req, res, next) {
