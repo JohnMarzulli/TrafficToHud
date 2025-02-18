@@ -25,10 +25,20 @@ function getDistance(firstPoint, otherPoint) {
     return r * c; // Distance in meters
 }
 exports.getDistance = getDistance;
+/**
+ * Convert statute miles to nautical miles.
+ * @param distance The distance in STATUTE MILES
+ * @returns A distance in Nautical Miles
+ */
 function getStatuteMilesToNauticalMiles(distance) {
     return distance * StatuteNauticalConversionFactor;
 }
 exports.getStatuteMilesToNauticalMiles = getStatuteMilesToNauticalMiles;
+/**
+ * Convert nautical miles to statute miles.
+ * @param distance The distance in NAUTICAL MILES
+ * @returns A distance in STATUTE Miles
+ */
 function getNauticalMilesToStatuteMiles(distance) {
     return distance / StatuteNauticalConversionFactor;
 }

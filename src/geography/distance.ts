@@ -33,13 +33,22 @@ export function getDistance(
     return r * c; // Distance in meters
 }
 
-
+/**
+ * Convert statute miles to nautical miles.
+ * @param distance The distance in STATUTE MILES
+ * @returns A distance in Nautical Miles
+ */
 export function getStatuteMilesToNauticalMiles(
     distance: number
 ): number {
     return distance * StatuteNauticalConversionFactor;
 }
 
+/**
+ * Convert nautical miles to statute miles.
+ * @param distance The distance in NAUTICAL MILES
+ * @returns A distance in STATUTE Miles
+ */
 export function getNauticalMilesToStatuteMiles(
     distance: number
 ): number {
