@@ -11,9 +11,9 @@ export abstract class LoggingObject {
     private readonly logLevel: LogLevel;
 
     public constructor(
-        log_level: LogLevel = LogLevel.debug
+        logLevel: LogLevel = LogLevel.debug
     ) {
-        this.logLevel = log_level;
+        this.logLevel = logLevel;
     }
 
     protected LogSpew(text: string) {

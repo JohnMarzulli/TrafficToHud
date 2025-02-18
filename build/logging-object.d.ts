@@ -8,7 +8,7 @@ export declare enum LogLevel {
 }
 export declare abstract class LoggingObject {
     private readonly logLevel;
-    constructor(log_level?: LogLevel);
+    constructor(logLevel?: LogLevel);
     protected LogSpew(text: string): void;
     protected LogInfo(text: string): void;
     protected LogDebug(text: string): void;

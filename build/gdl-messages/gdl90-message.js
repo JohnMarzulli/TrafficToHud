@@ -21,30 +21,6 @@ var Gdl90Message = /** @class */ (function () {
         this.messageType = Number(this.message[1].toString());
         this.decodedMessage = getDecodedMessage(this);
     }
-    Gdl90Message.prototype.getChecksumAndExpected = function (data) {
-        var dataToCalculate = data.slice(0);
-        if (dataToCalculate[0] == 126) {
-            dataToCalculate = dataToCalculate.slice(1);
-        }
-        if (dataToCalculate[dataToCalculate.length - 1] == 126) {
-            dataToCalculate = dataToCalculate.slice(0, -1);
-        }
-        var found = DataHandling.calculateChecksum(dataToCalculate);
-        var expected = dataToCalculate[dataToCalculate.length - 1];
-        var length = dataToCalculate.length;
-        return [found, expected, length];
-    };
-    Gdl90Message.prototype.compareBytes = function (rawData, unescapedData) {
-        if (rawData.length !== unescapedData.length) {
-            return false;
-        }
-        for (var i = 0; i < rawData.length; i++) {
-            if (rawData[i] !== unescapedData[i]) {
-                return false;
-            }
-        }
-        return true;
-    };
     return Gdl90Message;
 }());
 exports.Gdl90Message = Gdl90Message;

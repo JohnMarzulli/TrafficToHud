@@ -12,9 +12,9 @@ var LogLevel;
 })(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
 ;
 var LoggingObject = /** @class */ (function () {
-    function LoggingObject(log_level) {
-        if (log_level === void 0) { log_level = LogLevel.debug; }
-        this.logLevel = log_level;
+    function LoggingObject(logLevel) {
+        if (logLevel === void 0) { logLevel = LogLevel.debug; }
+        this.logLevel = logLevel;
     }
     LoggingObject.prototype.LogSpew = function (text) {
         if (this.logLevel <= LogLevel.spew) {

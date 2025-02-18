@@ -5,12 +5,12 @@ export declare abstract class SocketClient extends LoggingObject {
     private readonly url;
     private readonly route;
     private readonly checkInterval;
-    protected readonly socket_name: string;
-    protected response_package: any;
+    protected readonly socketName: string;
+    protected responsePackage: any;
     private webSocketClient;
     private lastMessageTime;
     private intervalId;
-    constructor(socket_name: string, route: string, log_level?: LogLevel);
+    constructor(socketName: string, route: string, logLevel?: LogLevel);
     start(): void;
     reset(): void;
     private connect;

@@ -1,12 +1,12 @@
 import { assert } from "console";
+import { LogLevel } from "../logging-object";
 import { CoordinateBoundaries } from "../types/boundaries";
 import { Coordinate } from "../types/coordinate";
+import { Reflectivity, ReflectivityRadar } from "../weather/nexrad";
+import { TextReport, TextReports } from "../weather/text-products";
+import { decodeAirmet, decodeGenericText } from "./airmet";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
-import { LogLevel } from "../logging-object";
-import { ReflectivityRadar, Reflectivity } from "../weather/nexrad";
-import { decodeAirmet, decodeGenericText } from "./airmet";
-import { TextReport, TextReports } from "../weather/text-products";
 
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
@@ -79,6 +79,148 @@ export class UatUplinkFrame {
     public readonly frameType: number;
     public readonly frame: Uint8Array;
 
+    constructor(
+        reserved: number,
+        frameType: number,
+        frame: Uint8Array
+    ) {
+        // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
+        // The element ID is SET which makes it Run Length Encoded.
+        // The block reference number is 0x4A570 in the North hemisphere.
+        // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
+        // Middle is -122.505005, 45.00275
+
+        // GPS minutes to decimal degrees:
+        // https://www.fcc.gov/media/radio/dms-decimal
+        //
+        // 0x4A570
+        // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
+        // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
+
+        this.reserved = reserved;
+        this.frameType = frameType;
+        this.frame = frame;
+
+        if (frame.length < 4) {
+            console.error("Frame is too short to be valid!");
+
+            return;
+        }
+
+        let isMonthDayValid: boolean = false;
+        let isSecondsValid: boolean = false;
+        let month: number = 0;
+        let day: number = 0;
+        let seconds: number = 0;
+        let length: number = 0;
+        let data: Uint8Array = null;
+
+        const aFlag: boolean = (frame[0] & 0x80) != 0;
+        const gFlag: boolean = (frame[0] & 0x40) != 0;
+        const pFlag: boolean = (frame[0] & 0x20) != 0;
+        const productId: number = ((frame[0] & 0x1f) << 6) | (frame[1] >> 2);
+        const isSouthernHemisphere: boolean = (frame[1] & 0x02) != 0;
+        const opt: number = ((this.frame[1] & 0x01) << 1) | ((this.frame[2] >> 7));
+        let hours: number = (frame[2] & 0x7c) >> 2;
+        let minutes: number = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
+        const padding = frame[3] & 0b00001111;
+
+        console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
+
+        // NEXRAD
+        if (productId == 63) {
+            if (padding != 0) {
+                console.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
+            }
+
+            this.decodeNexradRegional(frame, isSouthernHemisphere);
+        }
+        // NOTAM is 8
+        // AIRMET is 11
+        // SIGMET is 12
+        else if (productId == 8
+            || productId == 11
+            || productId == 12) {
+            isMonthDayValid = true;
+            isSecondsValid = false;
+            month = (frame[2] & 0x78) >> 3;
+            day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+            hours = (frame[3] & 0x3e) >> 1;
+            minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+            length = frame.length - 5; // ???
+            data = frame.subarray(5);
+
+            const report: string = decodeAirmet(data);
+            TextReports.addReport(new TextReport(report));
+        }
+        else if (productId == 19) {// Very unknown. No guess
+        }
+        // Textual METAR or TAF is 413
+        else if (productId == 405 || productId == 413) {
+            const report: string = decodeGenericText(frame.subarray(4));
+
+            TextReports.addReport(new TextReport(report));
+        }
+        else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
+        }
+        else if (productId == 1037) { // some sort of mixed text and graphical product 
+        }
+        else {
+            /*
+            for (let offset = 0; ++offset; offset < length) {
+                decodeGenericText(frame.subarray(offset));
+            }
+            */
+            console.error(`Unable to decode productId=${productId}`);
+        }
+
+        switch (opt) {
+            case 0: // Hours, Minutes
+                isMonthDayValid = false;
+                isSecondsValid = false;
+                length = frame.length - 4;
+                data = frame.subarray(4);
+                break;
+            case 1: // Hours, Minutes, Seconds
+                if (frame.length < 5) {
+                    break;
+                }
+                isMonthDayValid = false;
+                isSecondsValid = true;
+                seconds = ((frame[3] & 0x0f) << 2) | (frame[4] >> 6);
+                length = frame.length - 5;
+                data = frame.subarray(5);
+                break;
+            case 2: // Month, Day, Hours, Minutes
+                if (frame.length < 5) {
+                    break;
+                }
+                isMonthDayValid = true;
+                isSecondsValid = false;
+                month = (frame[2] & 0x78) >> 3;
+                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+                hours = (frame[3] & 0x3e) >> 1;
+                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+                length = frame.length - 5; // ???
+                data = frame.subarray(5);
+                break;
+            case 3: // Month, Day, Hours, Minutes, Seconds
+                if (frame.length < 6) {
+                    break;
+                }
+                isMonthDayValid = true;
+                isSecondsValid = true;
+                month = (frame[2] & 0x78) >> 3;
+                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+                hours = (frame[3] & 0x3e) >> 1;
+                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+                seconds = ((frame[4] & 0x03) << 3) | (frame[5] >> 5);
+                length = frame.length - 6;
+                data = frame.subarray(6);
+                break;
+        }
+    }
+
     private decodeNexradRegional(
         frame: Uint8Array,
         isSouthernHemisphere: boolean
@@ -124,148 +266,6 @@ export class UatUplinkFrame {
 
         const newReflectivity: Reflectivity = new Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
         ReflectivityRadar.addReport(newReflectivity);
-    }
-
-    constructor(
-        reserved: number,
-        frameType: number,
-        frame: Uint8Array
-    ) {
-        // frame[4], frame[5], frame[6]=0x84/132, 0xA5/165, 0x70/112 and make the block reference indicator.
-        // The element ID is SET which makes it Run Length Encoded.
-        // The block reference number is 0x4A570 in the North hemisphere.
-        // This block occupies a region from 123º 12' to 122º 24' West longitude, and from 45º 04' to 45º 08' North latitude.
-        // Middle is -122.505005, 45.00275
-
-        // GPS minutes to decimal degrees:
-        // https://www.fcc.gov/media/radio/dms-decimal
-        //
-        // 0x4A570
-        // 45° 4' 0"N, 123° 12' 18" W = 45.0666667, -123.205
-        // 45° 8' 0"N, 122° 24' 0" W = 45.1333333, -122.4
-
-        this.reserved = reserved;
-        this.frameType = frameType;
-        this.frame = frame;
-
-        if (frame.length < 4) {
-            console.error("Frame is too short to be valid!");
-
-            return;
-        }
-
-        let monthday_valid: boolean = false;
-        let seconds_valid: boolean = false;
-        let month: number = 0;
-        let day: number = 0;
-        let seconds: number = 0;
-        let length: number = 0;
-        let data: Uint8Array = null;
-
-        const aFlag: boolean = (frame[0] & 0x80) != 0;
-        const gFlag: boolean = (frame[0] & 0x40) != 0;
-        const pFlag: boolean = (frame[0] & 0x20) != 0;
-        const productId: number = ((frame[0] & 0x1f) << 6) | (frame[1] >> 2);
-        const isSouthernHemisphere: boolean = (frame[1] & 0x02) != 0;
-        const opt: number = ((this.frame[1] & 0x01) << 1) | ((this.frame[2] >> 7));
-        let hours: number = (frame[2] & 0x7c) >> 2;
-        let minutes: number = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
-        const padding = frame[3] & 0b00001111;
-
-        console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
-
-        // NEXRAD
-        if (productId == 63) {
-            if (padding != 0) {
-                console.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
-            }
-
-            this.decodeNexradRegional(frame, isSouthernHemisphere);
-        }
-        // NOTAM is 8
-        // AIRMET is 11
-        // SIGMET is 12
-        else if (productId == 8
-            || productId == 11
-            || productId == 12) {
-            monthday_valid = true;
-            seconds_valid = false;
-            month = (frame[2] & 0x78) >> 3;
-            day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
-            hours = (frame[3] & 0x3e) >> 1;
-            minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
-            length = frame.length - 5; // ???
-            data = frame.subarray(5);
-
-            const report: string = decodeAirmet(data);
-            TextReports.addReport(new TextReport(report));
-        }
-        else if (productId == 19) {// Very unknown. No guess
-        }
-        // Textual METAR or TAF is 413
-        else if (productId == 405 || productId == 413) {
-            const report: string = decodeGenericText(frame.subarray(4));
-
-            TextReports.addReport(new TextReport(report));
-        }
-        else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
-        }
-        else if (productId == 1037) { // some sort of mixed text and graphical product 
-        }
-        else {
-            /*
-            for (let offset = 0; ++offset; offset < length) {
-                decodeGenericText(frame.subarray(offset));
-            }
-            */
-            console.error(`Unable to decode productId=${productId}`);
-        }
-
-        switch (opt) {
-            case 0: // Hours, Minutes
-                monthday_valid = false;
-                seconds_valid = false;
-                length = frame.length - 4;
-                data = frame.subarray(4);
-                break;
-            case 1: // Hours, Minutes, Seconds
-                if (frame.length < 5) {
-                    break;
-                }
-                monthday_valid = false;
-                seconds_valid = true;
-                seconds = ((frame[3] & 0x0f) << 2) | (frame[4] >> 6);
-                length = frame.length - 5;
-                data = frame.subarray(5);
-                break;
-            case 2: // Month, Day, Hours, Minutes
-                if (frame.length < 5) {
-                    break;
-                }
-                monthday_valid = true;
-                seconds_valid = false;
-                month = (frame[2] & 0x78) >> 3;
-                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
-                hours = (frame[3] & 0x3e) >> 1;
-                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
-                length = frame.length - 5; // ???
-                data = frame.subarray(5);
-                break;
-            case 3: // Month, Day, Hours, Minutes, Seconds
-                if (frame.length < 6) {
-                    break;
-                }
-                monthday_valid = true;
-                seconds_valid = true;
-                month = (frame[2] & 0x78) >> 3;
-                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
-                hours = (frame[3] & 0x3e) >> 1;
-                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
-                seconds = ((frame[4] & 0x03) << 3) | (frame[5] >> 5);
-                length = frame.length - 6;
-                data = frame.subarray(6);
-                break;
-        }
     }
 }
 

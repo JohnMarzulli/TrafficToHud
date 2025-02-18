@@ -22,12 +22,12 @@ export class RadarClient extends SocketClient {
       json = {};
     }
 
-    if (this.response_package == null || this.response_package == undefined) {
-      this.response_package = json;
+    if (this.responsePackage == null || this.responsePackage == undefined) {
+      this.responsePackage = json;
     }
 
-    if (!this.keyInPackage(this.response_package, KnownTrafficKey)) {
-      this.response_package[KnownTrafficKey] = {};
+    if (!this.keyInPackage(this.responsePackage, KnownTrafficKey)) {
+      this.responsePackage[KnownTrafficKey] = {};
     }
 
     if (this.keyInPackage(json, IcaoAddressKey)) {
@@ -35,35 +35,35 @@ export class RadarClient extends SocketClient {
 
       json[ReportReceivedKey] = Date.now();
 
-      this.response_package[KnownTrafficKey][trafficKey] = json;
+      this.responsePackage[KnownTrafficKey][trafficKey] = json;
     } else {
-      const merged = { ...this.response_package, ...json };
-      this.response_package = merged;
+      const merged = { ...this.responsePackage, ...json };
+      this.responsePackage = merged;
     }
   }
 
   protected handleMessage(data: WebSocket.Data): void {
     super.handleMessage(data);
 
-    if (!this.keyInPackage(this.response_package, KnownTrafficKey)) {
+    if (!this.keyInPackage(this.responsePackage, KnownTrafficKey)) {
       return;
     }
 
     let gcedRadar = {};
 
-    for (const key in this.response_package[KnownTrafficKey]) {
-      const lastReceivedTime: number = this.response_package[KnownTrafficKey][key][ReportReceivedKey];
+    for (const key in this.responsePackage[KnownTrafficKey]) {
+      const lastReceivedTime: number = this.responsePackage[KnownTrafficKey][key][ReportReceivedKey];
       const lastReceivedAge: number = (Date.now() - lastReceivedTime) / 1000.0;
-      const stratuxAge: number = this.response_package[KnownTrafficKey][key][AgeKey];
+      const stratuxAge: number = this.responsePackage[KnownTrafficKey][key][AgeKey];
 
       if (stratuxAge >= this.TrafficRemovalPeriodSeconds || lastReceivedAge >= this.TrafficRemovalPeriodSeconds) {
-        this.LogSpew(`${this.socket_name}: GCed ${key}`);
+        this.LogSpew(`${this.socketName}: GCed ${key}`);
       }
       else {
-        gcedRadar[key] = this.response_package[KnownTrafficKey][key];
+        gcedRadar[key] = this.responsePackage[KnownTrafficKey][key];
       }
     }
 
-    this.response_package[KnownTrafficKey] = gcedRadar;
+    this.responsePackage[KnownTrafficKey] = gcedRadar;
   }
 }

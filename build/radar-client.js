@@ -43,40 +43,40 @@ var RadarClient = /** @class */ (function (_super) {
         if (json == null || json == undefined) {
             json = {};
         }
-        if (this.response_package == null || this.response_package == undefined) {
-            this.response_package = json;
+        if (this.responsePackage == null || this.responsePackage == undefined) {
+            this.responsePackage = json;
         }
-        if (!this.keyInPackage(this.response_package, KnownTrafficKey)) {
-            this.response_package[KnownTrafficKey] = {};
+        if (!this.keyInPackage(this.responsePackage, KnownTrafficKey)) {
+            this.responsePackage[KnownTrafficKey] = {};
         }
         if (this.keyInPackage(json, IcaoAddressKey)) {
             var trafficKey = json[IcaoAddressKey];
             json[ReportReceivedKey] = Date.now();
-            this.response_package[KnownTrafficKey][trafficKey] = json;
+            this.responsePackage[KnownTrafficKey][trafficKey] = json;
         }
         else {
-            var merged = __assign(__assign({}, this.response_package), json);
-            this.response_package = merged;
+            var merged = __assign(__assign({}, this.responsePackage), json);
+            this.responsePackage = merged;
         }
     };
     RadarClient.prototype.handleMessage = function (data) {
         _super.prototype.handleMessage.call(this, data);
-        if (!this.keyInPackage(this.response_package, KnownTrafficKey)) {
+        if (!this.keyInPackage(this.responsePackage, KnownTrafficKey)) {
             return;
         }
         var gcedRadar = {};
-        for (var key in this.response_package[KnownTrafficKey]) {
-            var lastReceivedTime = this.response_package[KnownTrafficKey][key][ReportReceivedKey];
+        for (var key in this.responsePackage[KnownTrafficKey]) {
+            var lastReceivedTime = this.responsePackage[KnownTrafficKey][key][ReportReceivedKey];
             var lastReceivedAge = (Date.now() - lastReceivedTime) / 1000.0;
-            var stratuxAge = this.response_package[KnownTrafficKey][key][AgeKey];
+            var stratuxAge = this.responsePackage[KnownTrafficKey][key][AgeKey];
             if (stratuxAge >= this.TrafficRemovalPeriodSeconds || lastReceivedAge >= this.TrafficRemovalPeriodSeconds) {
-                this.LogSpew(this.socket_name + ": GCed " + key);
+                this.LogSpew(this.socketName + ": GCed " + key);
             }
             else {
-                gcedRadar[key] = this.response_package[KnownTrafficKey][key];
+                gcedRadar[key] = this.responsePackage[KnownTrafficKey][key];
             }
         }
-        this.response_package[KnownTrafficKey] = gcedRadar;
+        this.responsePackage[KnownTrafficKey] = gcedRadar;
     };
     return RadarClient;
 }(socket_client_1.SocketClient));

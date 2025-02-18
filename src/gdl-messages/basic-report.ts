@@ -1,9 +1,17 @@
 import { assert } from "console";
 import { LogLevel } from "../logging-object";
+import { Coordinate } from "../types/coordinate";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
 
+/**
+ * Store a "Basic Report" (Uplink nomeclature)
+ */
 export class BasicReport extends DecodedGdl90Message {
+    public readonly location: Coordinate;
+    public readonly altitude: number;
+    public readonly speed: number;
+
     constructor(
         message: Gdl90Message
     ) {
@@ -20,19 +28,21 @@ export class BasicReport extends DecodedGdl90Message {
         // Basic report
         // Pg 26, FAA
         // UAT?
-        let timeOfReception = message.message.subarray(2, 5);
-        let payload = message.message.slice(5);
+        const timeOfReception: Uint8Array = message.message.subarray(2, 5);
+        const payload: Uint8Array = message.message.slice(5);
 
         // The payload is defined in RTCA/DO-282, Section 2.2
-        let icaoAddress = payload.slice(0, 3); // 3-byte ICAO address
-        let flags = payload[3]; // Flags for type of data
-        let latitude = (payload[4] << 16) | (payload[5] << 8) | payload[6]; // Latitude encoding
-        let longitude = (payload[7] << 16) | (payload[8] << 8) | payload[9]; // Longitude encoding
-        let altitude = (payload[10] << 8) | payload[11]; // Altitude
-        let velocity = (payload[12] << 8) | payload[13]; // Velocity
-        let additionalData = payload.slice(14); // Any remaining data
+        const icaoAddress: Uint8Array = payload.slice(0, 3); // 3-byte ICAO address
+        const flags: number = payload[3]; // Flags for type of data
+        const latitude: number = (payload[4] << 16) | (payload[5] << 8) | payload[6]; // Latitude encoding
+        const longitude: number = (payload[7] << 16) | (payload[8] << 8) | payload[9]; // Longitude encoding
+        const additionalData: Uint8Array = payload.slice(14); // Any remaining data
+
+        this.location = new Coordinate(longitude, latitude);
+        this.altitude = (payload[10] << 8) | payload[11]; // Altitude
+        this.speed = (payload[12] << 8) | payload[13]; // Velocity
 
         this.LogSpew(`UAT BASIC MSG: ${message.message.toString()}`);
-        this.LogSpew(`UAT BASIC MSG: TimeReceived=${timeOfReception}, ICAO=${icaoAddress}, flags=${flags}, lat=${latitude}, long=${longitude}, alt=${altitude}, vel=${velocity}, additional=${additionalData}, `);
+        this.LogSpew(`UAT BASIC MSG: TimeReceived=${timeOfReception}, ICAO=${icaoAddress}, flags=${flags}, lat=${latitude}, long=${longitude}, alt=${this.altitude}, vel=${this.speed}, additional=${additionalData}, `);
     }
 }

@@ -16,7 +16,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BasicReport = void 0;
 var console_1 = require("console");
 var logging_object_1 = require("../logging-object");
+var coordinate_1 = require("../types/coordinate");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
+/**
+ * Store a "Basic Report" (Uplink nomeclature)
+ */
 var BasicReport = /** @class */ (function (_super) {
     __extends(BasicReport, _super);
     function BasicReport(message) {
@@ -37,11 +41,12 @@ var BasicReport = /** @class */ (function (_super) {
         var flags = payload[3]; // Flags for type of data
         var latitude = (payload[4] << 16) | (payload[5] << 8) | payload[6]; // Latitude encoding
         var longitude = (payload[7] << 16) | (payload[8] << 8) | payload[9]; // Longitude encoding
-        var altitude = (payload[10] << 8) | payload[11]; // Altitude
-        var velocity = (payload[12] << 8) | payload[13]; // Velocity
         var additionalData = payload.slice(14); // Any remaining data
+        _this.location = new coordinate_1.Coordinate(longitude, latitude);
+        _this.altitude = (payload[10] << 8) | payload[11]; // Altitude
+        _this.speed = (payload[12] << 8) | payload[13]; // Velocity
         _this.LogSpew("UAT BASIC MSG: " + message.message.toString());
-        _this.LogSpew("UAT BASIC MSG: TimeReceived=" + timeOfReception + ", ICAO=" + icaoAddress + ", flags=" + flags + ", lat=" + latitude + ", long=" + longitude + ", alt=" + altitude + ", vel=" + velocity + ", additional=" + additionalData + ", ");
+        _this.LogSpew("UAT BASIC MSG: TimeReceived=" + timeOfReception + ", ICAO=" + icaoAddress + ", flags=" + flags + ", lat=" + latitude + ", long=" + longitude + ", alt=" + _this.altitude + ", vel=" + _this.speed + ", additional=" + additionalData + ", ");
         return _this;
     }
     return BasicReport;

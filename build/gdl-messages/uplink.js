@@ -15,13 +15,13 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodePayloadFromSample = exports.Uplink = exports.UatUplinkFrame = void 0;
 var console_1 = require("console");
+var logging_object_1 = require("../logging-object");
 var boundaries_1 = require("../types/boundaries");
 var coordinate_1 = require("../types/coordinate");
-var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
-var logging_object_1 = require("../logging-object");
 var nexrad_1 = require("../weather/nexrad");
-var airmet_1 = require("./airmet");
 var text_products_1 = require("../weather/text-products");
+var airmet_1 = require("./airmet");
+var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
 // https://phd-sid.ethz.ch/debian/stratux/stratux-1.5b2/notes/SBS-Description-Doc_SRT_47_rev01_20111024.pdf
@@ -115,8 +115,8 @@ var UatUplinkFrame = /** @class */ (function () {
             console.error("Frame is too short to be valid!");
             return;
         }
-        var monthday_valid = false;
-        var seconds_valid = false;
+        var isMonthDayValid = false;
+        var isSecondsValid = false;
         var month = 0;
         var day = 0;
         var seconds = 0;
@@ -145,8 +145,8 @@ var UatUplinkFrame = /** @class */ (function () {
         else if (productId == 8
             || productId == 11
             || productId == 12) {
-            monthday_valid = true;
-            seconds_valid = false;
+            isMonthDayValid = true;
+            isSecondsValid = false;
             month = (frame[2] & 0x78) >> 3;
             day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
             hours = (frame[3] & 0x3e) >> 1;
@@ -177,8 +177,8 @@ var UatUplinkFrame = /** @class */ (function () {
         }
         switch (opt) {
             case 0: // Hours, Minutes
-                monthday_valid = false;
-                seconds_valid = false;
+                isMonthDayValid = false;
+                isSecondsValid = false;
                 length = frame.length - 4;
                 data = frame.subarray(4);
                 break;
@@ -186,8 +186,8 @@ var UatUplinkFrame = /** @class */ (function () {
                 if (frame.length < 5) {
                     break;
                 }
-                monthday_valid = false;
-                seconds_valid = true;
+                isMonthDayValid = false;
+                isSecondsValid = true;
                 seconds = ((frame[3] & 0x0f) << 2) | (frame[4] >> 6);
                 length = frame.length - 5;
                 data = frame.subarray(5);
@@ -196,8 +196,8 @@ var UatUplinkFrame = /** @class */ (function () {
                 if (frame.length < 5) {
                     break;
                 }
-                monthday_valid = true;
-                seconds_valid = false;
+                isMonthDayValid = true;
+                isSecondsValid = false;
                 month = (frame[2] & 0x78) >> 3;
                 day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
                 hours = (frame[3] & 0x3e) >> 1;
@@ -209,8 +209,8 @@ var UatUplinkFrame = /** @class */ (function () {
                 if (frame.length < 6) {
                     break;
                 }
-                monthday_valid = true;
-                seconds_valid = true;
+                isMonthDayValid = true;
+                isSecondsValid = true;
                 month = (frame[2] & 0x78) >> 3;
                 day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
                 hours = (frame[3] & 0x3e) >> 1;

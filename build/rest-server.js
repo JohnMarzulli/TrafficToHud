@@ -34,12 +34,12 @@ var RestServer = /** @class */ (function () {
     // a horrific side effect of TS/JS and the object model it uses.
     // The calls to the Socket get a "this" value that points
     // to the BASE EXPRESS INSTANCE, not the handler's instance.
-    RestServer.GetStatusStatus = function (req) { return RestServer.status_client.getServiceStatus(req); };
-    RestServer.GetStatusResponse = function (req) { return RestServer.status_client.getServiceResponse(req); };
-    RestServer.GetRadarStatus = function (req) { return RestServer.radar_client.getServiceStatus(req); };
-    RestServer.GetRadarResponse = function (req) { return RestServer.radar_client.getServiceResponse(req); };
-    RestServer.GetGdl90Status = function (req) { return RestServer.gdl90_client.getServiceStatus(req); };
-    RestServer.GetGdl90Response = function (req) { return RestServer.gdl90_client.getServiceResponse(req); };
+    RestServer.GetStatusStatus = function (req) { return RestServer.statusClient.getServiceStatus(req); };
+    RestServer.GetStatusResponse = function (req) { return RestServer.statusClient.getServiceResponse(req); };
+    RestServer.GetRadarStatus = function (req) { return RestServer.radarClient.getServiceStatus(req); };
+    RestServer.GetRadarResponse = function (req) { return RestServer.radarClient.getServiceResponse(req); };
+    RestServer.GetGdl90Status = function (req) { return RestServer.gdl90Client.getServiceStatus(req); };
+    RestServer.GetGdl90Response = function (req) { return RestServer.gdl90Client.getServiceResponse(req); };
     /**
      * Returns the information about the service.
      * Intended to be used for compatibility checks
@@ -67,9 +67,9 @@ var RestServer = /** @class */ (function () {
      */
     RestServer.prototype.getServiceResetResponseBody = function (req) {
         traffic_client_1.TrafficClient.resetWebSocketClient();
-        RestServer.radar_client.reset();
-        RestServer.status_client.reset();
-        RestServer.gdl90_client.reset();
+        RestServer.radarClient.reset();
+        RestServer.statusClient.reset();
+        RestServer.gdl90Client.reset();
         return {
             resetTime: new Date().toUTCString()
         };
@@ -119,9 +119,9 @@ var RestServer = /** @class */ (function () {
             _this.express.use(route, router);
         });
     };
-    RestServer.status_client = new status_client_1.StatusClient();
-    RestServer.radar_client = new radar_client_1.RadarClient();
-    RestServer.gdl90_client = new gdl90_client_1.Gdl90Client();
+    RestServer.statusClient = new status_client_1.StatusClient();
+    RestServer.radarClient = new radar_client_1.RadarClient();
+    RestServer.gdl90Client = new gdl90_client_1.Gdl90Client();
     return RestServer;
 }());
 exports.default = new RestServer().express;

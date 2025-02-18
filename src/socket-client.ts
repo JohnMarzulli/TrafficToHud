@@ -8,21 +8,21 @@ export abstract class SocketClient extends LoggingObject {
     private readonly route: string;
     private readonly checkInterval: number = 10000; // 10 seconds
 
-    protected readonly socket_name: string;
-    protected response_package: any = {};
+    protected readonly socketName: string;
+    protected responsePackage: any = {};
 
     private webSocketClient: WebSocket | null = null;
     private lastMessageTime: number = 0;
     private intervalId: NodeJS.Timeout | null = null;
 
     constructor(
-        socket_name: string,
+        socketName: string,
         route: string,
-        log_level: LogLevel = LogLevel.error
+        logLevel: LogLevel = LogLevel.error
     ) {
-        super(log_level);
+        super(logLevel);
 
-        this.socket_name = socket_name;
+        this.socketName = socketName;
         this.route = route;
         this.url = `ws://${this.StratuxAddress}/${this.route}`;
 
@@ -47,12 +47,12 @@ export abstract class SocketClient extends LoggingObject {
         this.webSocketClient = new WebSocket(this.url);
         this.webSocketClient.onopen = () => this.handleOpen();
         this.webSocketClient.onmessage = (event) => this.handleMessage(event.data);
-        this.webSocketClient.onclose = () => this.LogInfo(`${this.socket_name}: closed`);
-        this.webSocketClient.onerror = (error) => this.LogErrorDetails(`${this.socket_name}: error`, error);
+        this.webSocketClient.onclose = () => this.LogInfo(`${this.socketName}: closed`);
+        this.webSocketClient.onerror = (error) => this.LogErrorDetails(`${this.socketName}: error`, error);
     }
 
     private handleOpen(): void {
-        this.LogInfo(`${this.socket_name}: connected`);
+        this.LogInfo(`${this.socketName}: connected`);
         this.lastMessageTime = Date.now();
     }
 
@@ -60,8 +60,8 @@ export abstract class SocketClient extends LoggingObject {
         this.lastMessageTime = Date.now();
         const decoded: string = this.decode(data);
 
-        this.LogSpew(`${this.socket_name} RAW: ${data.toString()}`);
-        this.LogInfo(`${this.socket_name} decoded: ${decoded}`);
+        this.LogSpew(`${this.socketName} RAW: ${data.toString()}`);
+        this.LogInfo(`${this.socketName} decoded: ${decoded}`);
 
         this.report(decoded);
     }
@@ -75,7 +75,7 @@ export abstract class SocketClient extends LoggingObject {
     }
 
     private reconnect(): void {
-        this.LogInfo(`${this.socket_name}: Reconnecting...`);
+        this.LogInfo(`${this.socketName}: Reconnecting...`);
         if (this.webSocketClient) {
             this.webSocketClient.close();
         }
@@ -99,12 +99,12 @@ export abstract class SocketClient extends LoggingObject {
             json = {};
         }
 
-        if (this.response_package == null || this.response_package == undefined) {
-            this.response_package = json;
+        if (this.responsePackage == null || this.responsePackage == undefined) {
+            this.responsePackage = json;
         }
         else {
-            const merged = { ...this.response_package, ...json };
-            this.response_package = merged;
+            const merged = { ...this.responsePackage, ...json };
+            this.responsePackage = merged;
         }
     }
 
@@ -128,17 +128,17 @@ export abstract class SocketClient extends LoggingObject {
         req: Request
     ): any {
         return {
-            "service_name": this.socket_name,
+            "service_name": this.socketName,
             socketStatus: this.webSocketClient != null ? this.webSocketClient.readyState : 0,
             socketTimeSinceLastTraffic: this.getSecondsSince()
         };
     }
 
     public getServiceResponse(req: Request): any {
-        if (req == null || this.response_package == null) {
+        if (req == null || this.responsePackage == null) {
             return {};
         }
 
-        return this.response_package;
+        return this.responsePackage;
     }
 }

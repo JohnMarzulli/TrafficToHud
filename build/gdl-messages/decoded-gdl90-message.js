@@ -17,9 +17,9 @@ exports.DecodedGdl90Message = void 0;
 var logging_object_1 = require("../logging-object");
 var DecodedGdl90Message = /** @class */ (function (_super) {
     __extends(DecodedGdl90Message, _super);
-    function DecodedGdl90Message(log_level) {
-        if (log_level === void 0) { log_level = logging_object_1.LogLevel.debug; }
-        return _super.call(this, log_level) || this;
+    function DecodedGdl90Message(logLevel) {
+        if (logLevel === void 0) { logLevel = logging_object_1.LogLevel.debug; }
+        return _super.call(this, logLevel) || this;
     }
     return DecodedGdl90Message;
 }(logging_object_1.LoggingObject));

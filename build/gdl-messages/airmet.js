@@ -53,9 +53,9 @@ exports.dlacDecode = dlacDecode;
  * @returns Human readable text.
  */
 function decodeGenericText(data) {
-    var text_data = dlacDecode(data);
-    console.log("    GENERIC TEXT: text_data=" + text_data);
-    return text_data;
+    var textData = dlacDecode(data);
+    console.log("    GENERIC TEXT: textData=" + textData);
+    return textData;
 }
 exports.decodeGenericText = decodeGenericText;
 /**
@@ -64,30 +64,30 @@ exports.decodeGenericText = decodeGenericText;
  * @returns A human readable AIRMET
  */
 function decodeAirmet(data) {
-    var record_format = ((data[0]) & 0xF0) >> 4;
-    var product_version = ((data[0]) & 0x0F);
-    var record_count = ((data[1]) & 0xF0) >> 4;
-    var location_identifier = dlacDecode(data.subarray(2, 5));
-    var record_reference = ((data[5])); //FIXME: Special values. 0x00 means "use location_identifier". 0xFF means "use different reference". (4-3).
-    if (record_format == 2) {
-        var record_length = ((data[6]) << 8) | (data[7]);
-        if ((data.length - record_length) < 6) {
-            console.error("FISB record not long enough: record_length=" + record_length + ", data.length=" + data.length);
+    var recordFormat = ((data[0]) & 0xF0) >> 4;
+    var productVersion = ((data[0]) & 0x0F);
+    var recordCount = ((data[1]) & 0xF0) >> 4;
+    var locationIdentifier = dlacDecode(data.subarray(2, 5));
+    var recordReference = ((data[5])); //FIXME: Special values. 0x00 means "use location_identifier". 0xFF means "use different reference". (4-3).
+    if (recordFormat == 2) {
+        var recordLength = ((data[6]) << 8) | (data[7]);
+        if ((data.length - recordLength) < 6) {
+            console.error("FISB record not long enough: recordLength=" + recordLength + ", data.length=" + data.length);
             return;
         }
         // Report identifier = report number + report year.
-        var report_number = ((data[8]) << 6) | (((data[9]) & 0xFC) >> 2);
-        var report_year = (((data[9]) & 0x03) << 5) | (((data[10]) & 0xF8) >> 3);
-        var report_status = ((data[10]) & 0x04) >> 2; //TODO: 0 = cancelled, 1 = active.
-        var text_data_len = record_length - 5;
-        var text_data = dlacDecode(data.subarray(11, 11 + text_data_len - 1));
-        console.log("    AIRMET: record_format=" + record_format + ", product_version=" + product_version + ", record_count=" + record_count + ", location_identifier=" + location_identifier + ", record_reference=" + record_reference + ", record_length=" + record_length + ", report_number=" + report_number + ", report_year=" + report_year + ", report_status=" + report_status + ", text_data_len=" + text_data_len + ", text_data=" + text_data);
-        return text_data;
+        var reportNumber = ((data[8]) << 6) | (((data[9]) & 0xFC) >> 2);
+        var reportYear = (((data[9]) & 0x03) << 5) | (((data[10]) & 0xF8) >> 3);
+        var reportStatus = ((data[10]) & 0x04) >> 2; //TODO: 0 = cancelled, 1 = active.
+        var textDataLength = recordLength - 5;
+        var textData = dlacDecode(data.subarray(11, 11 + textDataLength - 1));
+        console.log("    AIRMET: recordFormat=" + recordFormat + ", productVersion=" + productVersion + ", recordCount=" + recordCount + ", locationIdentifier=" + locationIdentifier + ", recordReference=" + recordReference + ", recordLength=" + recordLength + ", reportNumber=" + reportNumber + ", reportYear=" + reportYear + ", reportStatus=" + reportStatus + ", textDataLength=" + textDataLength + ", textData=" + textData);
+        return textData;
     }
     else {
-        console.error("Unknown format=" + record_format);
+        console.error("Unknown format=" + recordFormat);
     }
-    console.log("    AIRMET: record_format=" + record_format + ", product_version=" + product_version + ", record_count=" + record_count + ", location_identifier=" + location_identifier + ", record_reference=" + record_reference);
+    console.log("    AIRMET: recordFormat=" + recordFormat + ", productVersion=" + productVersion + ", recordCount=" + recordCount + ", locationIdentifier=" + locationIdentifier + ", recordReference=" + recordReference);
     return null;
 }
 exports.decodeAirmet = decodeAirmet;

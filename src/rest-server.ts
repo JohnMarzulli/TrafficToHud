@@ -21,24 +21,24 @@ import { TextReports } from "./weather/text-products";
 class RestServer {
   // ref to Express instance
   public express: express.Application;
-  private static readonly status_client: StatusClient = new StatusClient();
-  private static readonly radar_client: RadarClient = new RadarClient();
-  private static readonly gdl90_client: Gdl90Client = new Gdl90Client();
+  private static readonly statusClient: StatusClient = new StatusClient();
+  private static readonly radarClient: RadarClient = new RadarClient();
+  private static readonly gdl90Client: Gdl90Client = new Gdl90Client();
 
   // Making the sockets static and then having static handlers is
   // a horrific side effect of TS/JS and the object model it uses.
   // The calls to the Socket get a "this" value that points
   // to the BASE EXPRESS INSTANCE, not the handler's instance.
 
-  private static GetStatusStatus(req: Request): any { return RestServer.status_client.getServiceStatus(req); }
-  private static GetStatusResponse(req: Request): any { return RestServer.status_client.getServiceResponse(req); }
+  private static GetStatusStatus(req: Request): any { return RestServer.statusClient.getServiceStatus(req); }
+  private static GetStatusResponse(req: Request): any { return RestServer.statusClient.getServiceResponse(req); }
 
 
-  private static GetRadarStatus(req: Request): any { return RestServer.radar_client.getServiceStatus(req); }
-  private static GetRadarResponse(req: Request): any { return RestServer.radar_client.getServiceResponse(req); }
+  private static GetRadarStatus(req: Request): any { return RestServer.radarClient.getServiceStatus(req); }
+  private static GetRadarResponse(req: Request): any { return RestServer.radarClient.getServiceResponse(req); }
 
-  private static GetGdl90Status(req: Request): any { return RestServer.gdl90_client.getServiceStatus(req); }
-  private static GetGdl90Response(req: Request): any { return RestServer.gdl90_client.getServiceResponse(req); }
+  private static GetGdl90Status(req: Request): any { return RestServer.gdl90Client.getServiceStatus(req); }
+  private static GetGdl90Response(req: Request): any { return RestServer.gdl90Client.getServiceResponse(req); }
 
   /**
    * Returns the information about the service.
@@ -68,9 +68,9 @@ class RestServer {
    */
   private getServiceResetResponseBody(req: Request): any {
     TrafficClient.resetWebSocketClient();
-    RestServer.radar_client.reset();
-    RestServer.status_client.reset();
-    RestServer.gdl90_client.reset();
+    RestServer.radarClient.reset();
+    RestServer.statusClient.reset();
+    RestServer.gdl90Client.reset();
 
     return {
       resetTime: new Date().toUTCString()

@@ -29,16 +29,16 @@ var WebSocket = require("ws");
 var logging_object_1 = require("./logging-object");
 var SocketClient = /** @class */ (function (_super) {
     __extends(SocketClient, _super);
-    function SocketClient(socket_name, route, log_level) {
-        if (log_level === void 0) { log_level = logging_object_1.LogLevel.error; }
-        var _this = _super.call(this, log_level) || this;
+    function SocketClient(socketName, route, logLevel) {
+        if (logLevel === void 0) { logLevel = logging_object_1.LogLevel.error; }
+        var _this = _super.call(this, logLevel) || this;
         _this.StratuxAddress = "192.168.10.1";
         _this.checkInterval = 10000; // 10 seconds
-        _this.response_package = {};
+        _this.responsePackage = {};
         _this.webSocketClient = null;
         _this.lastMessageTime = 0;
         _this.intervalId = null;
-        _this.socket_name = socket_name;
+        _this.socketName = socketName;
         _this.route = route;
         _this.url = "ws://" + _this.StratuxAddress + "/" + _this.route;
         _this.start();
@@ -60,18 +60,18 @@ var SocketClient = /** @class */ (function (_super) {
         this.webSocketClient = new WebSocket(this.url);
         this.webSocketClient.onopen = function () { return _this.handleOpen(); };
         this.webSocketClient.onmessage = function (event) { return _this.handleMessage(event.data); };
-        this.webSocketClient.onclose = function () { return _this.LogInfo(_this.socket_name + ": closed"); };
-        this.webSocketClient.onerror = function (error) { return _this.LogErrorDetails(_this.socket_name + ": error", error); };
+        this.webSocketClient.onclose = function () { return _this.LogInfo(_this.socketName + ": closed"); };
+        this.webSocketClient.onerror = function (error) { return _this.LogErrorDetails(_this.socketName + ": error", error); };
     };
     SocketClient.prototype.handleOpen = function () {
-        this.LogInfo(this.socket_name + ": connected");
+        this.LogInfo(this.socketName + ": connected");
         this.lastMessageTime = Date.now();
     };
     SocketClient.prototype.handleMessage = function (data) {
         this.lastMessageTime = Date.now();
         var decoded = this.decode(data);
-        this.LogSpew(this.socket_name + " RAW: " + data.toString());
-        this.LogInfo(this.socket_name + " decoded: " + decoded);
+        this.LogSpew(this.socketName + " RAW: " + data.toString());
+        this.LogInfo(this.socketName + " decoded: " + decoded);
         this.report(decoded);
     };
     SocketClient.prototype.reconnectOnTimeout = function () {
@@ -83,7 +83,7 @@ var SocketClient = /** @class */ (function (_super) {
         }, this.checkInterval);
     };
     SocketClient.prototype.reconnect = function () {
-        this.LogInfo(this.socket_name + ": Reconnecting...");
+        this.LogInfo(this.socketName + ": Reconnecting...");
         if (this.webSocketClient) {
             this.webSocketClient.close();
         }
@@ -101,12 +101,12 @@ var SocketClient = /** @class */ (function (_super) {
         if (json == null || json == undefined) {
             json = {};
         }
-        if (this.response_package == null || this.response_package == undefined) {
-            this.response_package = json;
+        if (this.responsePackage == null || this.responsePackage == undefined) {
+            this.responsePackage = json;
         }
         else {
-            var merged = __assign(__assign({}, this.response_package), json);
-            this.response_package = merged;
+            var merged = __assign(__assign({}, this.responsePackage), json);
+            this.responsePackage = merged;
         }
     };
     SocketClient.prototype.keyInPackage = function (dataPackage, key) {
@@ -123,16 +123,16 @@ var SocketClient = /** @class */ (function (_super) {
     };
     SocketClient.prototype.getServiceStatus = function (req) {
         return {
-            "service_name": this.socket_name,
+            "service_name": this.socketName,
             socketStatus: this.webSocketClient != null ? this.webSocketClient.readyState : 0,
             socketTimeSinceLastTraffic: this.getSecondsSince()
         };
     };
     SocketClient.prototype.getServiceResponse = function (req) {
-        if (req == null || this.response_package == null) {
+        if (req == null || this.responsePackage == null) {
             return {};
         }
-        return this.response_package;
+        return this.responsePackage;
     };
     return SocketClient;
 }(logging_object_1.LoggingObject));

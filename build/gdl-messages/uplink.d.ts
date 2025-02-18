@@ -5,8 +5,8 @@ export declare class UatUplinkFrame {
     readonly reserved: number;
     readonly frameType: number;
     readonly frame: Uint8Array;
-    private decodeNexradRegional;
     constructor(reserved: number, frameType: number, frame: Uint8Array);
+    private decodeNexradRegional;
 }
 export declare class Uplink extends DecodedGdl90Message {
     readonly timeOfReception: number;

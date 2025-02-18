@@ -6,7 +6,5 @@ export declare class Gdl90Message {
     readonly message: Uint8Array;
     readonly decodedMessage: DecodedGdl90Message;
     constructor(raw_message: string);
-    private getChecksumAndExpected;
-    private compareBytes;
 }
 export declare function getDecodedMessage(message: Gdl90Message): DecodedGdl90Message;

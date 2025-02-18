@@ -29,39 +29,6 @@ export class Gdl90Message {
         this.messageType = Number(this.message[1].toString());
         this.decodedMessage = getDecodedMessage(this);
     }
-
-    private getChecksumAndExpected(
-        data: Uint8Array
-    ): [number, number, number] {
-        let dataToCalculate: Uint8Array = data.slice(0);
-
-        if (dataToCalculate[0] == 126) {
-            dataToCalculate = dataToCalculate.slice(1);
-        }
-
-        if (dataToCalculate[dataToCalculate.length - 1] == 126) {
-            dataToCalculate = dataToCalculate.slice(0, -1);
-        }
-
-        const found: number = DataHandling.calculateChecksum(dataToCalculate);
-        const expected: number = dataToCalculate[dataToCalculate.length - 1];
-        const length: number = dataToCalculate.length;
-
-        return [found, expected, length];
-    }
-
-    private compareBytes(
-        rawData: Uint8Array,
-        unescapedData: Uint8Array
-    ): boolean {
-        if (rawData.length !== unescapedData.length) { return false; }
-
-        for (let i = 0; i < rawData.length; i++) {
-            if (rawData[i] !== unescapedData[i]) { return false; }
-        }
-
-        return true;
-    }
 }
 
 export function getDecodedMessage(
@@ -80,7 +47,7 @@ export function getDecodedMessage(
     };
 
     if (message.messageType == 101) {
-        const subType = message.message[2];
+        const subType: number = message.message[2];
 
         return subType == 0
             ? new OwnshipDetails(message)

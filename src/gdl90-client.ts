@@ -72,33 +72,33 @@ export class Gdl90Client extends SocketClient {
     const deframedReport: Uint8Array = message.message.slice(1, -1);
     const messageType = message.messageType.toString();
 
-    if (!this.keyInPackage(this.response_package, MessageCountsKey)) {
-      this.response_package[MessageCountsKey] = {};
+    if (!this.keyInPackage(this.responsePackage, MessageCountsKey)) {
+      this.responsePackage[MessageCountsKey] = {};
     }
 
-    if (!this.keyInPackage(this.response_package[MessageCountsKey], messageType)) {
-      this.response_package[MessageCountsKey][messageType] = 1;
+    if (!this.keyInPackage(this.responsePackage[MessageCountsKey], messageType)) {
+      this.responsePackage[MessageCountsKey][messageType] = 1;
     } else {
-      this.response_package[MessageCountsKey][messageType] += 1;
+      this.responsePackage[MessageCountsKey][messageType] += 1;
     }
 
-    if (!this.keyInPackage(this.response_package, "last_msg")) {
-      this.response_package["last_msg"] = {};
+    if (!this.keyInPackage(this.responsePackage, "last_msg")) {
+      this.responsePackage["last_msg"] = {};
     }
 
-    if (!(messageType in this.response_package["last_msg"])) {
-      this.response_package["last_msg"][messageType] = [];
+    if (!(messageType in this.responsePackage["last_msg"])) {
+      this.responsePackage["last_msg"][messageType] = [];
     }
 
-    this.response_package["last_msg"][messageType].push(
+    this.responsePackage["last_msg"][messageType].push(
       {
         'recievedAt': message.receivedAt,
         'report': deframedReport.toString()
       }
     );
 
-    if (this.response_package["last_msg"][messageType].length > 10) {
-      this.response_package["last_msg"][messageType] = this.response_package["last_msg"][messageType].slice(-10);
+    if (this.responsePackage["last_msg"][messageType].length > 10) {
+      this.responsePackage["last_msg"][messageType] = this.responsePackage["last_msg"][messageType].slice(-10);
     }
   }
 
