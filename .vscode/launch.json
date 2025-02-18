@@ -67,6 +67,18 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Unit Tests: data-handling",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/data-handling.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "ProcessExampleMessages",
             "program": "${workspaceFolder}/build/gdl-messages/load-examples.js",
             "outFiles": [
