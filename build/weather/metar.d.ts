@@ -2,10 +2,25 @@
  * List of flight rule categories
  */
 export declare enum FlightRules {
+    /**
+     * Unable to decode the flight rules
+     */
     unknown = "UNK",
+    /**
+     * Visual Flight Rules
+     */
     vfr = "VFR",
+    /**
+     * Marginal Visual Flight Rules
+     */
     mvfr = "mvfr",
+    /**
+     * Instrument Flight Rules
+     */
     ifr = "ifr",
+    /**
+     * Low Instrument Flight Rules
+     */
     lifr = "lifr"
 }
 /**

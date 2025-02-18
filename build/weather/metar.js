@@ -8,10 +8,25 @@ var unknown = "Unknown";
  */
 var FlightRules;
 (function (FlightRules) {
+    /**
+     * Unable to decode the flight rules
+     */
     FlightRules["unknown"] = "UNK";
+    /**
+     * Visual Flight Rules
+     */
     FlightRules["vfr"] = "VFR";
+    /**
+     * Marginal Visual Flight Rules
+     */
     FlightRules["mvfr"] = "mvfr";
+    /**
+     * Instrument Flight Rules
+     */
     FlightRules["ifr"] = "ifr";
+    /**
+     * Low Instrument Flight Rules
+     */
     FlightRules["lifr"] = "lifr";
 })(FlightRules = exports.FlightRules || (exports.FlightRules = {}));
 /**
