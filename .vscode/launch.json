@@ -19,7 +19,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "METAR unit tests",
+            "name": "Unit Tests: METAR",
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
@@ -31,11 +31,23 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Text product decoding unit tests",
+            "name": "Unit Tests: Text product decoding",
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
             "program": "${workspaceFolder}/build/gdl-messages/airmet.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Coordinate distance",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/geography/distance.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]

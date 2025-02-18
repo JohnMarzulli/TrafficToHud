@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadAirports = exports.getAirports = void 0;
 var fs = require("fs");
 var path = require("path");
+var distance_1 = require("../geography/distance");
 var airport_1 = require("../types/airport");
 var coordinate_1 = require("../types/coordinate");
 /**
@@ -51,23 +52,15 @@ function loadAirports() {
     }
 }
 exports.loadAirports = loadAirports;
-function getDistance(firstPoint, otherPoint) {
-    var R = 6371e3; // Earth's mean radius in meters
-    // Convert degrees to radians
-    var toRadians = function (degrees) { return degrees * (Math.PI / 180); };
-    var lat1 = toRadians(firstPoint.latitude);
-    var lat2 = toRadians(otherPoint.latitude);
-    var deltaLat = toRadians(otherPoint.latitude - firstPoint.latitude);
-    var deltaLon = toRadians(otherPoint.longitude - firstPoint.longitude);
-    var a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-        Math.cos(lat1) * Math.cos(lat2) *
-            Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in meters
-}
+/**
+ * Get any airports that are within a given distance (STATUTE MILES)
+ * @param location The location to find airports within a radius of
+ * @param distance The maximum radius in STATUTE MILES
+ * @returns Any airports found within the given distance.
+ */
 function getAirportsWithinDistance(location, distance) {
     return airports.filter(function (airport) {
-        return getDistance(location, airport.coordinates) <= distance;
+        return distance_1.getDistance(location, airport.coordinates) <= distance;
     });
 }
 var airports = [];

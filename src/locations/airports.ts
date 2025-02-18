@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { getDistance } from '../geography/distance';
 import { Airport } from '../types/airport';
 import { Coordinate } from "../types/coordinate";
 
@@ -66,30 +67,12 @@ export function loadAirports(): void {
     }
 }
 
-function getDistance(
-    firstPoint: Coordinate,
-    otherPoint: Coordinate
-): number {
-    const R = 6371e3; // Earth's mean radius in meters
-
-    // Convert degrees to radians
-    const toRadians = (degrees: number) => degrees * (Math.PI / 180);
-
-    const lat1 = toRadians(firstPoint.latitude);
-    const lat2 = toRadians(otherPoint.latitude);
-    const deltaLat = toRadians(otherPoint.latitude - firstPoint.latitude);
-    const deltaLon = toRadians(otherPoint.longitude - firstPoint.longitude);
-
-    const a =
-        Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-        Math.cos(lat1) * Math.cos(lat2) *
-        Math.sin(deltaLon / 2) * Math.sin(deltaLon / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c; // Distance in meters
-}
-
+/**
+ * Get any airports that are within a given distance (STATUTE MILES)
+ * @param location The location to find airports within a radius of
+ * @param distance The maximum radius in STATUTE MILES
+ * @returns Any airports found within the given distance.
+ */
 function getAirportsWithinDistance(
     location: Coordinate,
     distance: number
