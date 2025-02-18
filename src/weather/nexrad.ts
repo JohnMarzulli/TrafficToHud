@@ -1,10 +1,14 @@
 import { CoordinateBoundaries } from "../types/boundaries";
 
+/**
+ * Stores reflectivity maps and provides a way to retrieve them.
+ */
 export class ReflectivityRadar {
-    private static MaxReportAgeSeconds = 15 * 60;
-    private static mapByReferenceId: any = {};
-    private static lastGcTime: number = 0;
-
+    /**
+     * Retrieve ALL of the reflectivity maps.
+     * @param req The REST request bundle.
+     * @returns A set of all known reflectivity blocks.
+     */
     public static getReflectivity(
         req: Request
     ): any {
@@ -19,6 +23,10 @@ export class ReflectivityRadar {
         return ReflectivityRadar.mapByReferenceId;
     }
 
+    /**
+     * Add or update reflectivity block report to the store.
+     * @param report The report to add or update.
+     */
     public static addReport(
         report: Reflectivity,
     ): void {
@@ -33,24 +41,68 @@ export class ReflectivityRadar {
                 const report = ReflectivityRadar.mapByReferenceId[id];
                 const reportAgeSeconds: number = (now - report.reportTime) / 1000;
 
-                if (reportAgeSeconds > ReflectivityRadar.MaxReportAgeSeconds) {
+                if (reportAgeSeconds > ReflectivityRadar.maxReportAgeSeconds) {
                     delete ReflectivityRadar.mapByReferenceId[id];
                 }
             }
         }
     }
+
+    private static maxReportAgeSeconds = 15 * 60;
+    private static mapByReferenceId: any = {};
+    private static lastGcTime: number = 0;
 }
 
+/**
+ * Holds the data for a reflectivity block.
+ */
 export class Reflectivity {
+    /**
+     *When was the report recieved?
+     *
+     * @type {number}
+     * @memberof Reflectivity
+     */
     public readonly reportTime: number;
+
+    /**
+     * What is the block Id of this data?
+     *
+     * @type {number}
+     * @memberof Reflectivity
+     */
     public readonly globalBlockReferenceId: number;
+
+    /**
+     * The NW and SE corners that are defined by the block Id.
+     *
+     * @type {CoordinateBoundaries}
+     * @memberof Reflectivity
+     */
     public readonly boundaries: CoordinateBoundaries;
+
+    /**
+     * The reflectivity data.
+     *
+     * @type {number[][]}
+     * @memberof Reflectivity
+     */
     public readonly reflectivity: number[][];
 
+    /**
+     * How old is the report?
+     * @returns The age of the report in seconds.
+     */
     public getReportAgeSeconds(): number {
         return (Date.now() - this.reportTime) / 1000;
     }
 
+    /**
+     * Build NEXRAD data from an uplink package.
+     * @param globalBlockReferenceId The block Id that defines the coverage region.
+     * @param boundaries The coordinate boundaries of the coverage region.
+     * @param bins The bin data for the coverage blocks.
+     */
     public constructor(
         globalBlockReferenceId: number,
         boundaries: CoordinateBoundaries,
