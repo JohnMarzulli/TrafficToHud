@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getDecodedMessage = exports.Gdl90Message = void 0;
-var DataHandling = require("../data_handling");
+var DataHandling = require("../data-handling");
 var basic_report_1 = require("./basic-report");
 var gdl90_heartbeat_1 = require("./gdl90-heartbeat");
 var long_report_1 = require("./long-report");

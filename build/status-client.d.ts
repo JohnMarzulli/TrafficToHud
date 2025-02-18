@@ -1,4 +1,0 @@
-import { SocketClient } from "./clients/socket-client";
-export declare class StatusClient extends SocketClient {
-    constructor();
-}

@@ -1,4 +1,4 @@
-import * as DataHandling from "../data_handling";
+import * as DataHandling from "../data-handling";
 import { BasicReport } from "./basic-report";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Heartbeat } from "./gdl90-heartbeat";
