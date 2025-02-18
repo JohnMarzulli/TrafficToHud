@@ -89,7 +89,7 @@ function testGetDistance(): void {
     assert.strictEqual(isWithInLimits(oshkosh, arlington, 3731.73), true);
     assert.strictEqual(isWithInLimits(arlington, oshkosh, 3731.73), true);
 
-    console.log("Passed GPS distance tests.");
+    console.log("PASSED: GPS distance tests.");
 }
 
 function testStatuteToNauticalConversion(): void {
@@ -105,7 +105,7 @@ function testStatuteToNauticalConversion(): void {
 
     assert.strictEqual(isWithinLimits(3242.78, getStatuteMilesToNauticalMiles(3731.73)), true);
 
-    console.log("Passed SM to NM tests.");
+    console.log("PASSED: SM to NM tests.");
 }
 
 function testNauticalToStatuteConversion(): void {
@@ -121,7 +121,7 @@ function testNauticalToStatuteConversion(): void {
 
     assert.strictEqual(isWithinLimits(3731.73, getNauticalMilesToStatuteMiles(3242.78)), true);
 
-    console.log("Passed NM to SM tests.");
+    console.log("PASSED: NM to SM tests.");
 }
 
 testGetDistance();

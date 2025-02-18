@@ -90,7 +90,7 @@ function testGetAirportsByDistance() {
     assert.strictEqual(hasAirport(foundAirports, "W10"), true);
     assert.strictEqual(hasAirport(foundAirports, "SEA"), false);
     assert.strictEqual(hasAirport(foundAirports, "BVS"), false);
-    console.log("Passed airport search tests.");
+    console.log("PASSED: Airport search tests.");
 }
 testGetAirportsByDistance();
 //# sourceMappingURL=airports.js.map

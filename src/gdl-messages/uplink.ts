@@ -440,7 +440,7 @@ function getCoordinateBoundariesFromBlockReferenceId(
     const lonSize: number = (blockReferenceIdentifier >= BlockThreshold ? WideBlockWidth : BlockWidth) * scale;
     const latSize: number = BlockHeight * scale;
 
-    // raw_lat/raw_lon points to the southwest corner in the northern hemisphere version
+    // rawLat/rawLon points to the southwest corner in the northern hemisphere version
     const minLongitude: number = rawLon - 360.0;
     const minLatitude: number = isSouthernHemisphere
         ? 0 - rawLat // southern hemisphere, mirror along the equator

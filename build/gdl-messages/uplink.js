@@ -383,7 +383,7 @@ function getCoordinateBoundariesFromBlockReferenceId(blockReferenceIdentifier, i
     var rawLon = (blockReferenceIdentifier % BlocksPerRing) * BlockWidth;
     var lonSize = (blockReferenceIdentifier >= BlockThreshold ? WideBlockWidth : BlockWidth) * scale;
     var latSize = BlockHeight * scale;
-    // raw_lat/raw_lon points to the southwest corner in the northern hemisphere version
+    // rawLat/rawLon points to the southwest corner in the northern hemisphere version
     var minLongitude = rawLon - 360.0;
     var minLatitude = isSouthernHemisphere
         ? 0 - rawLat // southern hemisphere, mirror along the equator

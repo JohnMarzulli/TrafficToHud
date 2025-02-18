@@ -256,7 +256,7 @@ function runVisbilityTests() {
     assert.strictEqual(getVisibilityCategory('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), FlightRules.vfr);
     assert.strictEqual(getVisibilityCategory('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.vfr);
 
-    console.log("All visbility tests passed!");
+    console.log("PASSED: Visbility categorization tests");
 }
 
 function runCeilingTests() {
@@ -270,7 +270,7 @@ function runCeilingTests() {
     assert.strictEqual(getCeilingCategory('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), FlightRules.vfr);
     assert.strictEqual(getCeilingCategory('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.mvfr);
 
-    console.log("All ceiling tests passed!");
+    console.log("PASSED: Ceiling categorization tests");
 }
 
 function runStationTests() {
@@ -284,7 +284,7 @@ function runStationTests() {
     assert.strictEqual(getStation('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), 'KGCC');
     assert.strictEqual(getStation('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), 'KVOK');
 
-    console.log("All station tests passed!");
+    console.log("PASSED: Station extraction tests");
 }
 
 function runCategoryTests() {
@@ -298,7 +298,7 @@ function runCategoryTests() {
     assert.strictEqual(getFlightRules('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), FlightRules.vfr);
     assert.strictEqual(getFlightRules('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.mvfr);
 
-    console.log("All category tests passed!");
+    console.log("PASSED: Flight rules categorization tests");
 }
 
 function runAddReportTests() {
@@ -312,7 +312,7 @@ function runAddReportTests() {
         assert.strictEqual(foundReport.metar, initialReport);
     }
 
-    console.log("All report adding & fetching tests passed!");
+    console.log("PASSED: Report adding & fetching tests");
 }
 
 runVisbilityTests();

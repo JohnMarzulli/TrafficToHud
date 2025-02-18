@@ -192,7 +192,7 @@ function runVisbilityTests() {
     assert.strictEqual(getVisibilityCategory('KRNT 132053Z 33010KT 1/2SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165'), FlightRules.lifr);
     assert.strictEqual(getVisibilityCategory('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), FlightRules.vfr);
     assert.strictEqual(getVisibilityCategory('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.vfr);
-    console.log("All visbility tests passed!");
+    console.log("PASSED: Visbility categorization tests");
 }
 function runCeilingTests() {
     assert.strictEqual(getCeilingCategory('KRNT 132053Z 33010KT 10SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165'), FlightRules.vfr);
@@ -204,7 +204,7 @@ function runCeilingTests() {
     assert.strictEqual(getCeilingCategory('KRNT 132053Z 33010KT 2SM SCT010 OVC004 23/14 A3001 RMK AO2 SLP165'), FlightRules.lifr);
     assert.strictEqual(getCeilingCategory('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), FlightRules.vfr);
     assert.strictEqual(getCeilingCategory('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.mvfr);
-    console.log("All ceiling tests passed!");
+    console.log("PASSED: Ceiling categorization tests");
 }
 function runStationTests() {
     assert.strictEqual(getStation('KRNT 132053Z 33010KT 10SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165'), 'KRNT');
@@ -216,7 +216,7 @@ function runStationTests() {
     assert.strictEqual(getStation('KRNT 132053Z 33010KT 2SM SCT010 OVC004 23/14 A3001 RMK AO2 SLP165'), 'KRNT');
     assert.strictEqual(getStation('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), 'KGCC');
     assert.strictEqual(getStation('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), 'KVOK');
-    console.log("All station tests passed!");
+    console.log("PASSED: Station extraction tests");
 }
 function runCategoryTests() {
     assert.strictEqual(getFlightRules('KRNT 132053Z 33010KT 10SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165'), FlightRules.vfr);
@@ -228,7 +228,7 @@ function runCategoryTests() {
     assert.strictEqual(getFlightRules('KRNT 132053Z 33010KT 2SM SCT010 OVC004 23/14 A3001 RMK AO2 SLP165'), FlightRules.lifr);
     assert.strictEqual(getFlightRules('KGCC 231853Z AUTO 28011KT 20/12 A2991 RMK AO2 LTG DSNT SE RAB41RAEMM SLP085 P0000 T02000117 PWINO $'), FlightRules.vfr);
     assert.strictEqual(getFlightRules('KVOK 251453Z 34004KT 10SM SCT008 OVC019 21/21 A2988 RMK AO2A SCT V BKN SLP119 53012'), FlightRules.mvfr);
-    console.log("All category tests passed!");
+    console.log("PASSED: Flight rules categorization tests");
 }
 function runAddReportTests() {
     var initialReport = 'KRNT 132053Z 33010KT 10SM SCT034 SCT041 23/14 A3001 RMK AO2 SLP165';
@@ -239,7 +239,7 @@ function runAddReportTests() {
         var foundReport = getReport(ident);
         assert.strictEqual(foundReport.metar, initialReport);
     }
-    console.log("All report adding & fetching tests passed!");
+    console.log("PASSED: Report adding & fetching tests");
 }
 runVisbilityTests();
 runCeilingTests();
