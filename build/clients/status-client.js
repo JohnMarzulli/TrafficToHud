@@ -14,8 +14,8 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatusClient = void 0;
-var socket_client_1 = require("./clients/socket-client");
-var logging_object_1 = require("./logging-object");
+var logging_object_1 = require("../logging-object");
+var socket_client_1 = require("./socket-client");
 var StatusClient = /** @class */ (function (_super) {
     __extends(StatusClient, _super);
     function StatusClient() {

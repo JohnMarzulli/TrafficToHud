@@ -1,6 +1,6 @@
-import { SocketClient } from "./socket-client";
-import { LogLevel } from "./logging-object";
 import * as WebSocket from "ws";
+import { LogLevel } from "../logging-object";
+import { SocketClient } from "./socket-client";
 
 const KnownTrafficKey: string = "known_traffic";
 const IcaoAddressKey: string = "Icao_addr";

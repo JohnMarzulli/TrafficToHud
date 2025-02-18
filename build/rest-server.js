@@ -5,11 +5,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var bodyParser = require("body-parser");
 var express = require("express");
 var logger = require("morgan");
-var gdl90_client_1 = require("./gdl90-client");
+var gdl90_client_1 = require("./clients/gdl90-client");
+var radar_client_1 = require("./clients/radar-client");
+var status_client_1 = require("./clients/status-client");
+var traffic_client_1 = require("./clients/traffic-client");
 var airports = require("./locations/airports");
-var radar_client_1 = require("./radar-client");
-var status_client_1 = require("./status-client");
-var traffic_client_1 = require("./traffic-client");
 var nexrad_1 = require("./weather/nexrad");
 var text_products_1 = require("./weather/text-products");
 /**

@@ -1,5 +1,5 @@
 import * as WebSocket from "ws";
-import { LoggingObject, LogLevel } from "./logging-object";
+import { LoggingObject, LogLevel } from "../logging-object";
 
 export abstract class SocketClient extends LoggingObject {
     private readonly StratuxAddress: string = "192.168.10.1";

@@ -14,9 +14,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gdl90Client = void 0;
-var socket_client_1 = require("./clients/socket-client");
-var logging_object_1 = require("./logging-object");
-var GdlMessages = require("./gdl-messages/gdl90-message");
+var GdlMessages = require("../gdl-messages/gdl90-message");
+var logging_object_1 = require("../logging-object");
+var socket_client_1 = require("./socket-client");
 var MessageCountsKey = "msg_counts";
 var Gdl90Client = /** @class */ (function (_super) {
     __extends(Gdl90Client, _super);

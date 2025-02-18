@@ -1,5 +1,5 @@
-import { SocketClient } from "./clients/socket-client";
 import * as WebSocket from "ws";
+import { SocketClient } from "./socket-client";
 export declare class Gdl90Client extends SocketClient {
     constructor();
     protected decode(data: WebSocket.Data): string;

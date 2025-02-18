@@ -4,11 +4,11 @@
 import * as bodyParser from "body-parser";
 import * as express from "express";
 import * as logger from "morgan";
-import { Gdl90Client } from "./gdl90-client";
+import { Gdl90Client } from "./clients/gdl90-client";
+import { RadarClient } from "./clients/radar-client";
+import { StatusClient } from "./clients/status-client";
+import { TrafficClient } from "./clients/traffic-client";
 import * as airports from "./locations/airports";
-import { RadarClient } from "./radar-client";
-import { StatusClient } from "./status-client";
-import { TrafficClient } from "./traffic-client";
 import { ReflectivityRadar } from "./weather/nexrad";
 import { TextReports } from "./weather/text-products";
 

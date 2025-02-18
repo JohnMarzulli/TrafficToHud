@@ -1,4 +1,4 @@
-import { SocketClient } from "./clients/socket-client";
+import { SocketClient } from "./socket-client";
 export declare class StatusClient extends SocketClient {
     constructor();
 }
