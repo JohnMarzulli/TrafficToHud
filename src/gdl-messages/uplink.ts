@@ -152,6 +152,7 @@ export class UatUplinkFrame {
             data = frame.subarray(5);
 
             const report: string = decodeAirmet(data);
+
             TextReports.addReport(new TextReport(report));
         }
         else if (productId == 19) {// Very unknown. No guess

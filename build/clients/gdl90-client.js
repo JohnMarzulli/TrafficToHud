@@ -14,7 +14,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gdl90Client = void 0;
-var GdlMessages = require("../gdl-messages/gdl90-message");
+var gdl90_message_1 = require("../gdl-messages/gdl90-message");
 var logging_object_1 = require("../logging-object");
 var socket_client_1 = require("./socket-client");
 var MessageCountsKey = "msg_counts";
@@ -59,7 +59,7 @@ var Gdl90Client = /** @class */ (function (_super) {
             // left in so the byte index from the specs
             // (https://www.foreflight.com/connect/spec/)
             // will match the indices references.
-            var processedMessage = new GdlMessages.Gdl90Message(report);
+            var processedMessage = new gdl90_message_1.Gdl90Message(report);
             this.addToMessageHistory(processedMessage);
         }
         catch (e) {

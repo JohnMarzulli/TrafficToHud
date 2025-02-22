@@ -36,20 +36,19 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadExamples = void 0;
-var gdl90_message_1 = require("./gdl90-message"); // Assuming Gdl90Message is in this file
-var uplink_1 = require("./uplink"); // Assuming decodePayloadFromSample is in this file
 var fs = require("fs");
 var path = require("path");
+var gdl90_message_1 = require("./gdl-messages/gdl90-message"); // Assuming Gdl90Message is in this file
+var uplink_1 = require("./gdl-messages/uplink"); // Assuming decodePayloadFromSample is in this file
 function loadExamples() {
     uplink_1.decodePayloadFromSample();
     var exampleFiles = [
-        '../../documentation/full-nexrad.json',
-        '../../documentation/full-asa379.json',
-        '../../documentation/full-lots-nexrad.json',
-        '../../documentation/full-medley.json',
-        '../../documentation/full-more-nexrad.json',
-        '../../documentation/full-notams.json'
+        '../documentation/full-nexrad.json',
+        '../documentation/full-asa379.json',
+        '../documentation/full-lots-nexrad.json',
+        '../documentation/full-medley.json',
+        '../documentation/full-more-nexrad.json',
+        '../documentation/full-notams.json'
     ];
     for (var _i = 0, exampleFiles_1 = exampleFiles; _i < exampleFiles_1.length; _i++) {
         var exampleFile = exampleFiles_1[_i];
@@ -73,7 +72,6 @@ function loadExamples() {
         }
     }
 }
-exports.loadExamples = loadExamples;
 // Main execution
 (function main() {
     return __awaiter(this, void 0, void 0, function () {

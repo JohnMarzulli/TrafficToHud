@@ -8,7 +8,7 @@ import { Gdl90Client } from "./clients/gdl90-client";
 import { RadarClient } from "./clients/radar-client";
 import { StatusClient } from "./clients/status-client";
 import { TrafficClient } from "./clients/traffic-client";
-import * as airports from "./locations/airports";
+import { getAirports, loadAirports } from "./locations/airports";
 import { ReflectivityRadar } from "./weather/nexrad";
 import { TextReports } from "./weather/text-reports";
 
@@ -87,7 +87,7 @@ class RestServer {
     this.middleware();
     this.routes();
 
-    airports.loadAirports();
+    loadAirports();
   }
 
   // Configure Express middleware.
@@ -123,7 +123,7 @@ class RestServer {
       "/Gdl90/Full": RestServer.GetGdl90Response,
       "/Weather/Reflectivity": ReflectivityRadar.getReflectivity,
       "/Weather/TextReports": TextReports.getReports,
-      "/airports/Airports": airports.getAirports
+      "/airports/Airports": getAirports
     };
 
     Object.keys(mapping).forEach(key => {

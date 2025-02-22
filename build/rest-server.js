@@ -9,7 +9,7 @@ var gdl90_client_1 = require("./clients/gdl90-client");
 var radar_client_1 = require("./clients/radar-client");
 var status_client_1 = require("./clients/status-client");
 var traffic_client_1 = require("./clients/traffic-client");
-var airports = require("./locations/airports");
+var airports_1 = require("./locations/airports");
 var nexrad_1 = require("./weather/nexrad");
 var text_reports_1 = require("./weather/text-reports");
 /**
@@ -28,7 +28,7 @@ var RestServer = /** @class */ (function () {
         this.express = express();
         this.middleware();
         this.routes();
-        airports.loadAirports();
+        airports_1.loadAirports();
     }
     // Making the sockets static and then having static handlers is
     // a horrific side effect of TS/JS and the object model it uses.
@@ -106,7 +106,7 @@ var RestServer = /** @class */ (function () {
             "/Gdl90/Full": RestServer.GetGdl90Response,
             "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
             "/Weather/TextReports": text_reports_1.TextReports.getReports,
-            "/airports/Airports": airports.getAirports
+            "/airports/Airports": airports_1.getAirports
         };
         Object.keys(mapping).forEach(function (key) {
             router.get(key, function (req, res, next) {

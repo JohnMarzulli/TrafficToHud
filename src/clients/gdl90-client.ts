@@ -1,5 +1,5 @@
 import * as WebSocket from "ws";
-import * as GdlMessages from "../gdl-messages/gdl90-message";
+import { Gdl90Message } from "../gdl-messages/gdl90-message";
 import { LogLevel } from "../logging-object";
 import { SocketClient } from "./socket-client";
 
@@ -58,7 +58,7 @@ export class Gdl90Client extends SocketClient {
       // left in so the byte index from the specs
       // (https://www.foreflight.com/connect/spec/)
       // will match the indices references.
-      const processedMessage: GdlMessages.Gdl90Message = new GdlMessages.Gdl90Message(report);
+      const processedMessage: Gdl90Message = new Gdl90Message(report);
 
       this.addToMessageHistory(processedMessage);
     } catch (e) {
@@ -67,7 +67,7 @@ export class Gdl90Client extends SocketClient {
   }
 
   private addToMessageHistory(
-    message: GdlMessages.Gdl90Message
+    message: Gdl90Message
   ): void {
     const deframedReport: Uint8Array = message.message.slice(1, -1);
     const messageType = message.messageType.toString();

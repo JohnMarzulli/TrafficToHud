@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDecodedMessage = exports.Gdl90Message = void 0;
-var DataHandling = require("../data-handling");
+exports.Gdl90Message = void 0;
+var data_handling_1 = require("../data-handling");
 var basic_report_1 = require("./basic-report");
 var gdl90_heartbeat_1 = require("./gdl90-heartbeat");
 var long_report_1 = require("./long-report");
@@ -17,7 +17,7 @@ var Gdl90Message = /** @class */ (function () {
     function Gdl90Message(raw_message) {
         this.receivedAt = Date.now();
         this.rawMessage = raw_message.trim();
-        this.message = DataHandling.unescapeData(DataHandling.getBytes(this.rawMessage));
+        this.message = data_handling_1.unescapeData(data_handling_1.getBytes(this.rawMessage));
         this.messageType = Number(this.message[1].toString());
         this.decodedMessage = getDecodedMessage(this);
     }
@@ -48,5 +48,4 @@ function getDecodedMessage(message) {
     console.error("UNKNOWN MSG:" + message.messageType + " - " + message.message);
     return null;
 }
-exports.getDecodedMessage = getDecodedMessage;
 //# sourceMappingURL=gdl90-message.js.map

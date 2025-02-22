@@ -23,7 +23,7 @@
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
-            "program": "${workspaceFolder}/build/weather/metar.js",
+            "program": "${workspaceFolder}/build/tests/metar.test.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
@@ -35,7 +35,7 @@
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
-            "program": "${workspaceFolder}/build/gdl-messages/airmet.js",
+            "program": "${workspaceFolder}/build/tests/airmet.test.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
@@ -47,7 +47,7 @@
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
-            "program": "${workspaceFolder}/build/geography/distance.js",
+            "program": "${workspaceFolder}/build/tests/distance.test.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
@@ -59,7 +59,7 @@
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
-            "program": "${workspaceFolder}/build/locations/airports.js",
+            "program": "${workspaceFolder}/build/tests/airports.test.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
@@ -71,7 +71,7 @@
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
-            "program": "${workspaceFolder}/build/data-handling.js",
+            "program": "${workspaceFolder}/build/tests/data-handling.test.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
@@ -79,11 +79,23 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Unit Tests: Text Reports",
+            "name": "Unit Tests: Text Report (METAR & TAF)",
             //"skipFiles": [
             //    "<node_internals>/**"
             //],
-            "program": "${workspaceFolder}/build/weather/text-report.js",
+            "program": "${workspaceFolder}/build/tests/text-report.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Text Reports Collation",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/text-reports.test.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
@@ -92,7 +104,7 @@
             "type": "node",
             "request": "launch",
             "name": "ProcessExampleMessages",
-            "program": "${workspaceFolder}/build/gdl-messages/load-examples.js",
+            "program": "${workspaceFolder}/build/load-examples.js",
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]

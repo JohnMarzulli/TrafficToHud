@@ -1,28 +1,4 @@
-/**
- * List of flight rule categories
- */
-export declare enum FlightRules {
-    /**
-     * Unable to decode the flight rules
-     */
-    unknown = "UNK",
-    /**
-     * Visual Flight Rules
-     */
-    vfr = "VFR",
-    /**
-     * Marginal Visual Flight Rules
-     */
-    mvfr = "mvfr",
-    /**
-     * Instrument Flight Rules
-     */
-    ifr = "ifr",
-    /**
-     * Low Instrument Flight Rules
-     */
-    lifr = "lifr"
-}
+import { FlightRules } from './flight-rules';
 /**
  * Object to hold and decode a weather report.
  */
@@ -51,13 +27,26 @@ export declare class Metar {
     constructor(report: string);
 }
 /**
- * Add a report to the current known metars.
- * @param report The report to add.
+ * For a METAR, what is the flight category of the VISBILITY
+ * @param metar The METAR to analyze for visbility
+ * @returns The flight category based on *only* the visibility
  */
-export declare function addReport(report: Metar): void;
+export declare function getVisibilityCategory(metar: string): FlightRules;
 /**
- * Get any reports for the given station/
- * @param station The station to get the metar for.
- * @returns The report, if any were found. Otherwise returns `null`.
+ * For a METAR, what is the flight category of the CEILING
+ * @param metar The METAR to analyze for the ceiling
+ * @returns The flight category based on *only* the ceiling
  */
-export declare function getReport(station: string): Metar | null;
+export declare function getCeilingCategory(metar: string): FlightRules;
+/**
+ * Get the station that reported the METAR
+ * @param metar The metar to extract the reporting station from.
+ * @returns The station found, otherwise "UNKNOWN".
+ */
+export declare function getStation(metar: string): string;
+/**
+ * Given a METAR, what are the flight rules for the weather?
+ * @param metar The METAR to extract the flight rules from.
+ * @returns The flight rules for the station based on the METAR.
+ */
+export declare function getFlightRules(metar: string): FlightRules;

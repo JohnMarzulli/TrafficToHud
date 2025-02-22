@@ -1,3 +1,5 @@
+import { Airport } from '../types/airport';
+import { Coordinate } from "../types/coordinate";
 /**
  * Get a list of any nearby airports
  * @param req The REST request
@@ -8,3 +10,10 @@ export declare function getAirports(req: Request): any;
  * Loads the list of airports from the FAA data.
  */
 export declare function loadAirports(): void;
+/**
+ * Get any airports that are within a given distance (STATUTE MILES)
+ * @param location The location to find airports within a radius of
+ * @param distance The maximum radius in STATUTE MILES
+ * @returns Any airports found within the given distance.
+ */
+export declare function getAirportsWithinDistance(location: Coordinate, distance: number): Airport[];

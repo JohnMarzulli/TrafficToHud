@@ -1,5 +1,8 @@
 "use strict";
 
+import { FlightRules } from './flight-rules';
+import { Metar } from './metar';
+import { ReportType } from './report-type';
 import { TextReport } from './text-report';
 
 /**
@@ -18,7 +21,7 @@ export class TextReports {
      */
     public static getReports(
         req: Request
-    ): any {
+    ): { [key in ReportType]: TextReport[] } {
         const secondsSinceLastGc = (Date.now() - TextReports.lastGcTime) / 1000;
 
         if (secondsSinceLastGc > 60) {
@@ -27,7 +30,41 @@ export class TextReports {
             TextReports.lastGcTime = Date.now();
         }
 
-        return TextReports.reports;
+        const reports: { [key in ReportType]: TextReport[] } = {
+            [ReportType.Metar]: [],
+            [ReportType.Taf]: [],
+            [ReportType.Text]: [],
+            [ReportType.Airmet]: []
+        };
+
+        for (const report of TextReports.reports) {
+            reports[report.reportType].push(report);
+        }
+
+        return reports;
+    }
+
+    public static getKnownFlightRules(
+        req: Request
+    ): { [key in string]: FlightRules } {
+        const secondsSinceLastGc = (Date.now() - TextReports.lastGcTime) / 1000;
+
+        if (secondsSinceLastGc > 60) {
+            TextReports.removeOldReports();
+
+            TextReports.lastGcTime = Date.now();
+        }
+
+        const knownFlightRules: { [key in string]: FlightRules } = {};
+
+        for (const report of TextReports.reports) {
+            if (report.reportType === ReportType.Metar) {
+                const flightRules: FlightRules = (new Metar(`${report.station} ${report.report}`)).flightRules;
+                knownFlightRules[report.station] = flightRules;
+            }
+        }
+
+        return knownFlightRules;
     }
 
     /**
@@ -53,28 +90,3 @@ export class TextReports {
         TextReports.reports = TextReports.reports.filter(obj => !condition(obj));
     }
 }
-
-/**
- * The types of text reports that we can handle.
- */
-export enum ReportType {
-    /**
-     * A pure text report.
-     */
-    Text = "TEXT",
-
-    /**
-     * An airmet
-     */
-    Airmet = "AIRMET",
-
-    /**
-     * A METAR for a station
-     */
-    Metar = "METAR",
-
-    /**
-     * A TAF for a station.
-     */
-    Taf = "TAF"
-};

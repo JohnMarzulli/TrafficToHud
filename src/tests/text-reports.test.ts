@@ -1,11 +1,13 @@
-import { Gdl90Message } from './gdl90-message'; // Assuming Gdl90Message is in this file
-import { decodePayloadFromSample } from './uplink'; // Assuming decodePayloadFromSample is in this file
+"use strict";
+
+import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Gdl90Message } from '../gdl-messages/gdl90-message';
+import { FlightRules } from '../weather/flight-rules';
+import { TextReports } from '../weather/text-reports';
 
-export function loadExamples(): void {
-    decodePayloadFromSample();
-
+function loadExamples(): void {
     const exampleFiles: string[] = [
         '../../documentation/full-nexrad.json',
         '../../documentation/full-asa379.json',
@@ -40,7 +42,24 @@ export function loadExamples(): void {
     }
 }
 
-// Main execution
-(async function main() {
+function testGetFlightRules(): void {
     loadExamples();
-})();
+
+    const knownFlightRules: { [key in string]: FlightRules } = TextReports.getKnownFlightRules(null);
+
+    assert.strictEqual(true, knownFlightRules !== null);
+
+    assert.strictEqual(FlightRules.vfr, knownFlightRules["K0S9"]);
+    assert.strictEqual(FlightRules.mvfr, knownFlightRules["K4S2"]);
+    assert.strictEqual(FlightRules.mvfr, knownFlightRules["K63S"]);
+    assert.strictEqual(FlightRules.ifr, knownFlightRules["K6S2"]);
+    assert.strictEqual(FlightRules.vfr, knownFlightRules["KBVS"]);
+    assert.strictEqual(FlightRules.vfr, knownFlightRules["KPLU"]);
+    assert.strictEqual(FlightRules.vfr, knownFlightRules["KS33"]);
+    assert.strictEqual(FlightRules.vfr, knownFlightRules["KS39"]);
+    assert.strictEqual(FlightRules.vfr, knownFlightRules["KSZT"]);
+
+    console.log("PASSED: Flight rules categorization tests");
+}
+
+testGetFlightRules();

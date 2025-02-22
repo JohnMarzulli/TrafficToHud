@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadAirports = exports.getAirports = void 0;
-var assert = require("assert");
+exports.getAirportsWithinDistance = exports.loadAirports = exports.getAirports = void 0;
 var fs = require("fs");
 var path = require("path");
 var distance_1 = require("../geography/distance");
@@ -74,23 +73,7 @@ function getAirportsWithinDistance(location, distance) {
     });
     return foundAirports;
 }
+exports.getAirportsWithinDistance = getAirportsWithinDistance;
 var airports = [];
 var airportsByIdent = new Map();
-function hasAirport(airports, ident) {
-    return airports.filter(function (airport) { return airport.ident === ident; }).length >= 1;
-}
-function testGetAirportsByDistance() {
-    loadAirports();
-    var foundAirports = getAirportsWithinDistance(new coordinate_1.Coordinate(-122.15, 48.16), 20.0);
-    assert.strictEqual(foundAirports.length, 12);
-    assert.strictEqual(hasAirport(foundAirports, "KAWO"), true);
-    assert.strictEqual(hasAirport(foundAirports, "KPAE"), true);
-    assert.strictEqual(hasAirport(foundAirports, "W10"), true);
-    assert.strictEqual(hasAirport(foundAirports, "S43"), true);
-    assert.strictEqual(hasAirport(foundAirports, "W10"), true);
-    assert.strictEqual(hasAirport(foundAirports, "SEA"), false);
-    assert.strictEqual(hasAirport(foundAirports, "BVS"), false);
-    console.log("PASSED: Airport search tests.");
-}
-testGetAirportsByDistance();
 //# sourceMappingURL=airports.js.map

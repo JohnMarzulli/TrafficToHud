@@ -7,4 +7,3 @@ export declare class Gdl90Message {
     readonly decodedMessage: DecodedGdl90Message;
     constructor(raw_message: string);
 }
-export declare function getDecodedMessage(message: Gdl90Message): DecodedGdl90Message;

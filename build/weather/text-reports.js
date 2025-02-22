@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReportType = exports.TextReports = void 0;
+exports.TextReports = void 0;
+var metar_1 = require("./metar");
+var report_type_1 = require("./report-type");
 /**
  * Provide way to collect and make available text reports
  * provided by uplink/UAT data
@@ -14,12 +16,39 @@ var TextReports = /** @class */ (function () {
      * @returns A set of all of the available reports.
      */
     TextReports.getReports = function (req) {
+        var _a;
         var secondsSinceLastGc = (Date.now() - TextReports.lastGcTime) / 1000;
         if (secondsSinceLastGc > 60) {
             TextReports.removeOldReports();
             TextReports.lastGcTime = Date.now();
         }
-        return TextReports.reports;
+        var reports = (_a = {},
+            _a[report_type_1.ReportType.Metar] = [],
+            _a[report_type_1.ReportType.Taf] = [],
+            _a[report_type_1.ReportType.Text] = [],
+            _a[report_type_1.ReportType.Airmet] = [],
+            _a);
+        for (var _i = 0, _b = TextReports.reports; _i < _b.length; _i++) {
+            var report = _b[_i];
+            reports[report.reportType].push(report);
+        }
+        return reports;
+    };
+    TextReports.getKnownFlightRules = function (req) {
+        var secondsSinceLastGc = (Date.now() - TextReports.lastGcTime) / 1000;
+        if (secondsSinceLastGc > 60) {
+            TextReports.removeOldReports();
+            TextReports.lastGcTime = Date.now();
+        }
+        var knownFlightRules = {};
+        for (var _i = 0, _a = TextReports.reports; _i < _a.length; _i++) {
+            var report = _a[_i];
+            if (report.reportType === report_type_1.ReportType.Metar) {
+                var flightRules = (new metar_1.Metar(report.station + " " + report.report)).flightRules;
+                knownFlightRules[report.station] = flightRules;
+            }
+        }
+        return knownFlightRules;
     };
     /**
      * Add a text report.
@@ -46,27 +75,4 @@ var TextReports = /** @class */ (function () {
     return TextReports;
 }());
 exports.TextReports = TextReports;
-/**
- * The types of text reports that we can handle.
- */
-var ReportType;
-(function (ReportType) {
-    /**
-     * A pure text report.
-     */
-    ReportType["Text"] = "TEXT";
-    /**
-     * An airmet
-     */
-    ReportType["Airmet"] = "AIRMET";
-    /**
-     * A METAR for a station
-     */
-    ReportType["Metar"] = "METAR";
-    /**
-     * A TAF for a station.
-     */
-    ReportType["Taf"] = "TAF";
-})(ReportType = exports.ReportType || (exports.ReportType = {}));
-;
 //# sourceMappingURL=text-reports.js.map

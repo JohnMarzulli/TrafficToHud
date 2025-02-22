@@ -1,3 +1,5 @@
+import { FlightRules } from './flight-rules';
+import { ReportType } from './report-type';
 import { TextReport } from './text-report';
 /**
  * Provide way to collect and make available text reports
@@ -12,32 +14,16 @@ export declare class TextReports {
      * @param req The REST request
      * @returns A set of all of the available reports.
      */
-    static getReports(req: Request): any;
+    static getReports(req: Request): {
+        [key in ReportType]: TextReport[];
+    };
+    static getKnownFlightRules(req: Request): {
+        [key in string]: FlightRules;
+    };
     /**
      * Add a text report.
      * @param report The report to add.
      */
     static addReport(report: TextReport): void;
     private static removeOldReports;
-}
-/**
- * The types of text reports that we can handle.
- */
-export declare enum ReportType {
-    /**
-     * A pure text report.
-     */
-    Text = "TEXT",
-    /**
-     * An airmet
-     */
-    Airmet = "AIRMET",
-    /**
-     * A METAR for a station
-     */
-    Metar = "METAR",
-    /**
-     * A TAF for a station.
-     */
-    Taf = "TAF"
 }

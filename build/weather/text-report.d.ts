@@ -1,4 +1,4 @@
-import { ReportType } from './text-reports';
+import { ReportType } from './report-type';
 /**
  * Holds a text report.
  */

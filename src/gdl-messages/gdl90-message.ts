@@ -1,4 +1,4 @@
-import * as DataHandling from "../data-handling";
+import { getBytes, unescapeData } from "../data-handling";
 import { BasicReport } from "./basic-report";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Heartbeat } from "./gdl90-heartbeat";
@@ -25,13 +25,13 @@ export class Gdl90Message {
     ) {
         this.receivedAt = Date.now();
         this.rawMessage = raw_message.trim();
-        this.message = DataHandling.unescapeData(DataHandling.getBytes(this.rawMessage));
+        this.message = unescapeData(getBytes(this.rawMessage));
         this.messageType = Number(this.message[1].toString());
         this.decodedMessage = getDecodedMessage(this);
     }
 }
 
-export function getDecodedMessage(
+function getDecodedMessage(
     message: Gdl90Message,
 ): DecodedGdl90Message {
     const constructorMap: { [key: number]: new (message: Gdl90Message) => DecodedGdl90Message; } = {
