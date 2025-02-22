@@ -1,3 +1,4 @@
+import { TextReport } from './text-report';
 /**
  * Provide way to collect and make available text reports
  * provided by uplink/UAT data
@@ -22,7 +23,7 @@ export declare class TextReports {
 /**
  * The types of text reports that we can handle.
  */
-declare enum ReportType {
+export declare enum ReportType {
     /**
      * A pure text report.
      */
@@ -40,13 +41,3 @@ declare enum ReportType {
      */
     Taf = "TAF"
 }
-export declare class TextReport {
-    readonly reportTime: number;
-    readonly reportType: ReportType;
-    readonly station: string;
-    readonly report: string;
-    getReportAgeSeconds(): number;
-    constructor(rawReport: string);
-    private getReportType;
-}
-export {};

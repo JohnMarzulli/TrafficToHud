@@ -19,7 +19,8 @@ var logging_object_1 = require("../logging-object");
 var boundaries_1 = require("../types/boundaries");
 var coordinate_1 = require("../types/coordinate");
 var nexrad_1 = require("../weather/nexrad");
-var text_products_1 = require("../weather/text-products");
+var text_reports_1 = require("../weather/text-reports");
+var text_report_1 = require("../weather/text-report");
 var airmet_1 = require("./airmet");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
 // References:
@@ -154,14 +155,14 @@ var UatUplinkFrame = /** @class */ (function () {
             length = frame.length - 5; // ???
             data = frame.subarray(5);
             var report = airmet_1.decodeAirmet(data);
-            text_products_1.TextReports.addReport(new text_products_1.TextReport(report));
+            text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
         }
         else if (productId == 19) { // Very unknown. No guess
         }
         // Textual METAR or TAF is 413
         else if (productId == 405 || productId == 413) {
             var report = airmet_1.decodeGenericText(frame.subarray(4));
-            text_products_1.TextReports.addReport(new text_products_1.TextReport(report));
+            text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
         }
         else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
         }
