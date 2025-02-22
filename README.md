@@ -39,6 +39,15 @@ npm install
 sudo npm install -g typescript
 ```
 
+### Development Tools
+
+Madge is used to find and prevent circular dependancies. (<https://github.com/pahen/madge>)
+
+```powershell
+madge  --orphans .\traffic-manager.ts;
+madge  --circular .\traffic-manager.ts;
+```
+
 
 ### Revision History
 

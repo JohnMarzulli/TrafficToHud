@@ -123,6 +123,7 @@ class RestServer {
       "/Gdl90/Full": RestServer.GetGdl90Response,
       "/Weather/Reflectivity": ReflectivityRadar.getReflectivity,
       "/Weather/TextReports": TextReports.getReports,
+      "/Weather/FlightRules": TextReports.getKnownFlightRules,
       "/airports/Airports": getAirports
     };
 
