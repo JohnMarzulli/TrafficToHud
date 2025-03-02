@@ -8,8 +8,8 @@ import { Gdl90Client } from "./clients/gdl90-client";
 import { RadarClient } from "./clients/radar-client";
 import { StatusClient } from "./clients/status-client";
 import { TrafficClient } from "./clients/traffic-client";
-import { loadExamples } from "./load-examples";
 import { getAirports, loadAirports } from "./locations/airports";
+import { loadExamples } from "./tests/sample_data";
 import { ReflectivityRadar } from "./weather/nexrad";
 import { TextReports } from "./weather/text-reports";
 

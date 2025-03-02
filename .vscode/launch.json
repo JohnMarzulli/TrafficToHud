@@ -12,6 +12,18 @@
             //    "<node_internals>/**"
             //],
             "program": "${workspaceFolder}/build/traffic-manager.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "TrafficToHud (TEST DATA)",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/traffic-manager.js",
             "args": ["--load-examples"],
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"

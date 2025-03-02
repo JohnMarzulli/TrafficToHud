@@ -3,9 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert = require("assert");
 var flight_rules_1 = require("../weather/flight-rules");
 var text_reports_1 = require("../weather/text-reports");
-var load_examples_1 = require("../load-examples");
+var sample_data_1 = require("./sample_data");
 function testGetFlightRules() {
-    load_examples_1.loadExamples();
+    sample_data_1.loadExamples();
     var knownFlightRules = text_reports_1.TextReports.getKnownFlightRules(null);
     assert.strictEqual(true, knownFlightRules !== null);
     assert.strictEqual(flight_rules_1.FlightRules.vfr, knownFlightRules["K0S9"]);
