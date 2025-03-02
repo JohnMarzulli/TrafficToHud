@@ -1,1 +1,1 @@
-export {};
+export declare function loadExamples(): void;

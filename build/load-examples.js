@@ -36,6 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.loadExamples = void 0;
 var fs = require("fs");
 var path = require("path");
 var gdl90_message_1 = require("./gdl-messages/gdl90-message"); // Assuming Gdl90Message is in this file
@@ -72,6 +73,7 @@ function loadExamples() {
         }
     }
 }
+exports.loadExamples = loadExamples;
 // Main execution
 (function main() {
     return __awaiter(this, void 0, void 0, function () {
