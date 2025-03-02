@@ -9,6 +9,7 @@ var gdl90_client_1 = require("./clients/gdl90-client");
 var radar_client_1 = require("./clients/radar-client");
 var status_client_1 = require("./clients/status-client");
 var traffic_client_1 = require("./clients/traffic-client");
+var load_examples_1 = require("./load-examples");
 var airports_1 = require("./locations/airports");
 var nexrad_1 = require("./weather/nexrad");
 var text_reports_1 = require("./weather/text-reports");
@@ -29,6 +30,9 @@ var RestServer = /** @class */ (function () {
         this.middleware();
         this.routes();
         airports_1.loadAirports();
+        if (process.argv.includes("--load-examples")) {
+            load_examples_1.loadExamples();
+        }
     }
     // Making the sockets static and then having static handlers is
     // a horrific side effect of TS/JS and the object model it uses.

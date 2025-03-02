@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Gdl90Message } from './gdl-messages/gdl90-message'; // Assuming Gdl90Message is in this file
 import { decodePayloadFromSample } from './gdl-messages/uplink'; // Assuming decodePayloadFromSample is in this file
 
-function loadExamples(): void {
+export function loadExamples(): void {
     decodePayloadFromSample();
 
     const exampleFiles: string[] = [

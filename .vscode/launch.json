@@ -12,6 +12,7 @@
             //    "<node_internals>/**"
             //],
             "program": "${workspaceFolder}/build/traffic-manager.js",
+            "args": ["--load-examples"],
             "outFiles": [
                 "${workspaceFolder}/build/**/*.js"
             ]
