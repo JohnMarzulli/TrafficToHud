@@ -20,6 +20,14 @@ export declare class ReflectivityRadar {
     private static lastGcTime;
 }
 /**
+ * Holds the data for a run of reflectivity
+ */
+export declare class BinRun {
+    readonly runLength: number;
+    readonly reflectivity: number;
+    constructor(runLength: number, reflectivity: number);
+}
+/**
  * Holds the data for a reflectivity block.
  */
 export declare class Reflectivity {
@@ -47,10 +55,10 @@ export declare class Reflectivity {
     /**
      * The reflectivity data.
      *
-     * @type {number[][]}
+     * @type {BinRun[][]}
      * @memberof Reflectivity
      */
-    readonly reflectivity: number[][];
+    readonly reflectivity: BinRun[][];
     /**
      * How old is the report?
      * @returns The age of the report in seconds.
@@ -62,5 +70,5 @@ export declare class Reflectivity {
      * @param boundaries The coordinate boundaries of the coverage region.
      * @param bins The bin data for the coverage blocks.
      */
-    constructor(globalBlockReferenceId: number, boundaries: CoordinateBoundaries, bins: number[]);
+    constructor(globalBlockReferenceId: number, boundaries: CoordinateBoundaries, bins: BinRun[]);
 }

@@ -2,9 +2,9 @@ import { assert } from "console";
 import { LogLevel } from "../logging-object";
 import { CoordinateBoundaries } from "../types/boundaries";
 import { Coordinate } from "../types/coordinate";
-import { Reflectivity, ReflectivityRadar } from "../weather/nexrad";
-import { TextReports } from "../weather/text-reports";
+import { BinRun, Reflectivity, ReflectivityRadar } from "../weather/nexrad";
 import { TextReport } from '../weather/text-report';
+import { TextReports } from "../weather/text-reports";
 import { decodeAirmet, decodeGenericText } from "./airmet";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
@@ -252,18 +252,13 @@ export class UatUplinkFrame {
         row) have Intensity value 0. 
         */
 
-        let binCount = 0;
-        let bins: number[] = [];
+        let bins: BinRun[] = [];
         for (let index in reflectivity) {
             const apduByte = reflectivity[index];
             const runCount = rleSet ? (apduByte >> 3) + 1 : 1;
             const intensity = apduByte & 0b00000111;
 
-            for (let i = 0; i < runCount; i++) {
-                ++binCount;
-
-                bins.push(intensity);
-            }
+            bins.push(new BinRun(runCount, intensity));
         }
 
         const newReflectivity: Reflectivity = new Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);

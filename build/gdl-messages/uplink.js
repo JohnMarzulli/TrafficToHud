@@ -19,8 +19,8 @@ var logging_object_1 = require("../logging-object");
 var boundaries_1 = require("../types/boundaries");
 var coordinate_1 = require("../types/coordinate");
 var nexrad_1 = require("../weather/nexrad");
-var text_reports_1 = require("../weather/text-reports");
 var text_report_1 = require("../weather/text-report");
+var text_reports_1 = require("../weather/text-reports");
 var airmet_1 = require("./airmet");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
 // References:
@@ -244,16 +244,12 @@ var UatUplinkFrame = /** @class */ (function () {
         (0x50) indicates that the next 11 bins (the last 7 of the first row, plus the first 4 of the following
         row) have Intensity value 0.
         */
-        var binCount = 0;
         var bins = [];
         for (var index in reflectivity) {
             var apduByte = reflectivity[index];
             var runCount = rleSet ? (apduByte >> 3) + 1 : 1;
             var intensity = apduByte & 7;
-            for (var i = 0; i < runCount; i++) {
-                ++binCount;
-                bins.push(intensity);
-            }
+            bins.push(new nexrad_1.BinRun(runCount, intensity));
         }
         var newReflectivity = new nexrad_1.Reflectivity(globalBlockReferenceIdentifier, boundaries, bins);
         nexrad_1.ReflectivityRadar.addReport(newReflectivity);

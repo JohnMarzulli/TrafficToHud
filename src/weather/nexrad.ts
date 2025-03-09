@@ -1,5 +1,7 @@
 import { CoordinateBoundaries } from "../types/boundaries";
 
+const totalBinRowLength: number = 32;
+
 /**
  * Stores reflectivity maps and provides a way to retrieve them.
  */
@@ -48,9 +50,25 @@ export class ReflectivityRadar {
         }
     }
 
-    private static maxReportAgeSeconds = 15 * 60;
+    private static maxReportAgeSeconds = 30 * 60;
     private static mapByReferenceId: any = {};
     private static lastGcTime: number = 0;
+}
+
+/**
+ * Holds the data for a run of reflectivity
+ */
+export class BinRun {
+    public readonly runLength: number;
+    public readonly reflectivity: number;
+
+    public constructor(
+        runLength: number,
+        reflectivity: number
+    ) {
+        this.runLength = runLength;
+        this.reflectivity = reflectivity;
+    }
 }
 
 /**
@@ -84,10 +102,10 @@ export class Reflectivity {
     /**
      * The reflectivity data.
      *
-     * @type {number[][]}
+     * @type {BinRun[][]}
      * @memberof Reflectivity
      */
-    public readonly reflectivity: number[][];
+    public readonly reflectivity: BinRun[][];
 
     /**
      * How old is the report?
@@ -106,7 +124,7 @@ export class Reflectivity {
     public constructor(
         globalBlockReferenceId: number,
         boundaries: CoordinateBoundaries,
-        bins: number[]
+        bins: BinRun[]
     ) {
         // TODO: Use the hour and minute from the message and combine it with the UTC date
         this.reportTime = Date.now();
@@ -114,10 +132,41 @@ export class Reflectivity {
         this.boundaries = boundaries;
         this.reflectivity = [];
 
-        while (bins.length > 0) {
-            const row = bins.splice(0, 32);
+        let binIndex = 0;
 
-            this.reflectivity.push(row);
+        while (binIndex < bins.length) {
+            const row: BinRun[] = [];
+            let rowSize = 0;
+
+            // Keep the Run Length Encoding, but
+            // limit it so the run never goes over into the
+            // the next row. This will help with decoding on the render side.
+            while (rowSize < totalBinRowLength) {
+                const previousRowSize: number = rowSize;
+                rowSize += bins[binIndex].runLength;
+
+                if (rowSize >= totalBinRowLength) {
+                    const maxAllowedRunSize = totalBinRowLength - previousRowSize;
+                    const replacement: BinRun = new BinRun(bins[binIndex].runLength - maxAllowedRunSize, bins[binIndex].reflectivity);
+                    const maxAllowed: BinRun = new BinRun(maxAllowedRunSize, bins[binIndex].reflectivity);
+                    row.push(maxAllowed);
+                    bins[binIndex] = replacement;
+
+                    this.reflectivity.push(row);
+
+                    if (replacement.runLength === 0) {
+                        ++binIndex;
+                    }
+                }
+                else {
+                    row.push(bins[binIndex]);
+                    ++binIndex;
+                }
+
+                if (binIndex >= bins.length) {
+                    break;
+                }
+            }
         }
     }
 }

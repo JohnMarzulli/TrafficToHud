@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Reflectivity = exports.ReflectivityRadar = void 0;
+exports.Reflectivity = exports.BinRun = exports.ReflectivityRadar = void 0;
+var totalBinRowLength = 32;
 /**
  * Stores reflectivity maps and provides a way to retrieve them.
  */
@@ -39,12 +40,23 @@ var ReflectivityRadar = /** @class */ (function () {
             }
         }
     };
-    ReflectivityRadar.maxReportAgeSeconds = 15 * 60;
+    ReflectivityRadar.maxReportAgeSeconds = 30 * 60;
     ReflectivityRadar.mapByReferenceId = {};
     ReflectivityRadar.lastGcTime = 0;
     return ReflectivityRadar;
 }());
 exports.ReflectivityRadar = ReflectivityRadar;
+/**
+ * Holds the data for a run of reflectivity
+ */
+var BinRun = /** @class */ (function () {
+    function BinRun(runLength, reflectivity) {
+        this.runLength = runLength;
+        this.reflectivity = reflectivity;
+    }
+    return BinRun;
+}());
+exports.BinRun = BinRun;
 /**
  * Holds the data for a reflectivity block.
  */
@@ -61,9 +73,35 @@ var Reflectivity = /** @class */ (function () {
         this.globalBlockReferenceId = globalBlockReferenceId;
         this.boundaries = boundaries;
         this.reflectivity = [];
-        while (bins.length > 0) {
-            var row = bins.splice(0, 32);
-            this.reflectivity.push(row);
+        var binIndex = 0;
+        while (binIndex < bins.length) {
+            var row = [];
+            var rowSize = 0;
+            // Keep the Run Length Encoding, but
+            // limit it so the run never goes over into the
+            // the next row. This will help with decoding on the render side.
+            while (rowSize < totalBinRowLength) {
+                var previousRowSize = rowSize;
+                rowSize += bins[binIndex].runLength;
+                if (rowSize >= totalBinRowLength) {
+                    var maxAllowedRunSize = totalBinRowLength - previousRowSize;
+                    var replacement = new BinRun(bins[binIndex].runLength - maxAllowedRunSize, bins[binIndex].reflectivity);
+                    var maxAllowed = new BinRun(maxAllowedRunSize, bins[binIndex].reflectivity);
+                    row.push(maxAllowed);
+                    bins[binIndex] = replacement;
+                    this.reflectivity.push(row);
+                    if (replacement.runLength === 0) {
+                        ++binIndex;
+                    }
+                }
+                else {
+                    row.push(bins[binIndex]);
+                    ++binIndex;
+                }
+                if (binIndex >= bins.length) {
+                    break;
+                }
+            }
         }
     }
     /**
