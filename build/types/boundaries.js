@@ -10,7 +10,9 @@ var CoordinateBoundaries = /** @class */ (function () {
      * @param northWestern The most NW corner of the box.
      * @param southEastern The most SE corner of the box.
      */
-    function CoordinateBoundaries(northWestern, southEastern) {
+    function CoordinateBoundaries(latSize, lonSize, northWestern, southEastern) {
+        this.latSize = latSize;
+        this.lonSize = lonSize;
         this.northWestern = northWestern;
         this.southEastern = southEastern;
     }

@@ -5,6 +5,22 @@ import { Coordinate } from "./coordinate";
  */
 export class CoordinateBoundaries {
     /**
+     * How much does each bin advance in latitude.
+     *
+     * @type {number}
+     * @memberof CoordinateBoundaries
+     */
+    public readonly latSize: number;
+
+    /**
+     * How much does each bin advance in longitude.
+     *
+     * @type {number}
+     * @memberof CoordinateBoundaries
+     */
+    public readonly lonSize: number;
+
+    /**
      *The most NorthWestern coordinate of the boundary
      *
      * @type {Coordinate}
@@ -34,9 +50,13 @@ export class CoordinateBoundaries {
      * @param southEastern The most SE corner of the box.
      */
     public constructor(
+        latSize: number,
+        lonSize: number,
         northWestern: Coordinate,
         southEastern: Coordinate
     ) {
+        this.latSize = latSize;
+        this.lonSize = lonSize;
         this.northWestern = northWestern;
         this.southEastern = southEastern;
     }
