@@ -1,4 +1,4 @@
-import { loadExamples } from './tests/sample_data';
+import { loadExamples } from './tests/sample-data';
 
 // Main execution
 (async function main() {

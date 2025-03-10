@@ -92,6 +92,18 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Unit Tests: nexrad-decoding",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/nexrad-decoding.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Unit Tests: Text Report (METAR & TAF)",
             //"skipFiles": [
             //    "<node_internals>/**"

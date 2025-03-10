@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var assert = require("assert");
 var flight_rules_1 = require("../weather/flight-rules");
 var text_reports_1 = require("../weather/text-reports");
-var sample_data_1 = require("./sample_data");
+var sample_data_1 = require("./sample-data");
 function testGetFlightRules() {
     sample_data_1.loadExamples();
     var knownFlightRules = text_reports_1.TextReports.getKnownFlightRules(null);

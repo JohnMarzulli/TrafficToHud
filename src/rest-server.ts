@@ -9,7 +9,7 @@ import { RadarClient } from "./clients/radar-client";
 import { StatusClient } from "./clients/status-client";
 import { TrafficClient } from "./clients/traffic-client";
 import { getAirports, loadAirports } from "./locations/airports";
-import { loadExamples } from "./tests/sample_data";
+import { loadExamples } from "./tests/sample-data";
 import { ReflectivityRadar } from "./weather/nexrad";
 import { TextReports } from "./weather/text-reports";
 

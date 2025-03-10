@@ -10,7 +10,7 @@ var radar_client_1 = require("./clients/radar-client");
 var status_client_1 = require("./clients/status-client");
 var traffic_client_1 = require("./clients/traffic-client");
 var airports_1 = require("./locations/airports");
-var sample_data_1 = require("./tests/sample_data");
+var sample_data_1 = require("./tests/sample-data");
 var nexrad_1 = require("./weather/nexrad");
 var text_reports_1 = require("./weather/text-reports");
 /**

@@ -3,7 +3,7 @@
 import * as assert from 'assert';
 import { FlightRules } from '../weather/flight-rules';
 import { TextReports } from '../weather/text-reports';
-import { loadExamples } from "./sample_data";
+import { loadExamples } from "./sample-data";
 
 function testGetFlightRules(): void {
     loadExamples();
