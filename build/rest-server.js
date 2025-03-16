@@ -30,6 +30,7 @@ var RestServer = /** @class */ (function () {
         this.middleware();
         this.routes();
         airports_1.loadAirports();
+        airports_1.loadFrequencies();
         if (process.argv.includes("--load-examples")) {
             sample_data_1.loadExamples();
         }
@@ -111,7 +112,8 @@ var RestServer = /** @class */ (function () {
             "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
             "/Weather/TextReports": text_reports_1.TextReports.getReports,
             "/Weather/FlightRules": text_reports_1.TextReports.getKnownFlightRules,
-            "/airports/Airports": airports_1.getAirports
+            "/airports/Airports": airports_1.getAirports,
+            "/airports/Frequencies": airports_1.getFrequencies
         };
         Object.keys(mapping).forEach(function (key) {
             router.get(key, function (req, res, next) {
