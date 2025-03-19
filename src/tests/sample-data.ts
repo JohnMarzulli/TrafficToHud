@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Gdl90Message } from '../gdl-messages/gdl90-message'; // Assuming Gdl90Message is in this file
 import { decodePayloadFromSample } from '../gdl-messages/uplink'; // Assuming decodePayloadFromSample is in this file
+import { TextReport } from '../weather/text-report';
+import { TextReports } from '../weather/text-reports';
 
 // Corner: 45'8", 123'12" => 45.1333, -123.2
 // Corner: 45'4", 122'24" => 45.0667, -122.4
@@ -42,5 +44,14 @@ export function loadExamples(): void {
         } catch (err) {
             console.error('Error loading or parsing JSON file:', err);
         }
+    }
+
+    const tafs: TextReport[] = [
+        new TextReport("TAF KPAE 212320Z 2200/2224 11009G16KT P6SM -RA SCT020 BKN050\nFM220100 13012KT 6SM -RA BR OVC020\nFM220600 16014G21KT 6SM -RA BR OVC022\nFM221200 15012G18KT P6SM VCSH OVC015\nFM222100 15017G28KT 6SM -RA BR OVC025"),
+        new TextReport("TAF KBFI 190540Z 1906/2006 17004KT P6SM BKN045 OVC090\nFM191100 13003KT P6SM OVC060\nFM191800 14004KT P6SM -RA OVC050\nFM192200 13010G20KT P6SM -RA OVC040\nFM200300 15012G25KT P6SM -RA OVC030"),
+        new TextReport("TAF KSEA 190540Z 1906/2012 14006KT P6SM BKN040 OVC080\nFM191800 13006KT P6SM -RA OVC050\nFM192200 14010G20KT P6SM -RA OVC035\nFM200300 13013G25KT P6SM -RA OVC025\nFM201000 17012KT P6SM VCSH OVC035")];
+
+    for (const taf of tafs) {
+        TextReports.addReport(taf);
     }
 }
