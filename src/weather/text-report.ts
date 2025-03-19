@@ -68,10 +68,6 @@ export class TextReport {
             // This is to work around EOL characters in large text blocks.
             let textReport: string = rawReport.substring(rawReport.indexOf(this.station) + this.station.length).trim();
 
-            if (this.reportType != ReportType.Airmet) {
-                textReport = textReport.replace(/\n/g, '');
-            }
-
             textReport = textReport.replace(/ +/g, ' ');
 
             const separatorIndex = textReport.indexOf('\u001E');

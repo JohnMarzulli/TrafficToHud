@@ -22,9 +22,6 @@ var TextReport = /** @class */ (function () {
             this.station = match[1].trim();
             // This is to work around EOL characters in large text blocks.
             var textReport = rawReport.substring(rawReport.indexOf(this.station) + this.station.length).trim();
-            if (this.reportType != report_type_1.ReportType.Airmet) {
-                textReport = textReport.replace(/\n/g, '');
-            }
             textReport = textReport.replace(/ +/g, ' ');
             var separatorIndex = textReport.indexOf('\u001E');
             if (separatorIndex !== -1) {
