@@ -27,6 +27,7 @@ var TextReport = /** @class */ (function () {
             if (separatorIndex !== -1) {
                 textReport = textReport.slice(0, separatorIndex);
             }
+            textReport = textReport.trimEnd();
             this.report = textReport;
         }
     }

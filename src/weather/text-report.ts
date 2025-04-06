@@ -76,6 +76,8 @@ export class TextReport {
                 textReport = textReport.slice(0, separatorIndex);
             }
 
+            textReport = textReport.trimEnd();
+
             this.report = textReport;
         }
     }
