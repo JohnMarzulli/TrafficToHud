@@ -132,12 +132,9 @@ var UatUplinkFrame = /** @class */ (function () {
         var hours = (frame[2] & 0x7c) >> 2;
         var minutes = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         var padding = frame[3] & 15;
-        console.log("    FRAME: product=" + productId + ", name=" + getFisbProductName(productId) + ", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
+        //console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
         // NEXRAD
-        if (productId == 63) {
-            if (padding != 0) {
-                console.error("Padding is not zero. Probable decoding error. padding=" + padding);
-            }
+        if (productId == 63 && padding === 0) {
             this.decodeNexradRegional(frame, isSouthernHemisphere);
         }
         // NOTAM is 8
@@ -264,7 +261,7 @@ var Uplink = /** @class */ (function (_super) {
         // Application header and frame format
         // is from https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
         // page 31
-        _super.call(this, logging_object_1.LogLevel.all) || this;
+        _super.call(this, logging_object_1.LogLevel.error) || this;
         _this.frames = [];
         console_1.assert(message.message[1] == 7);
         var timeOfReception = message.message.subarray(2, 5);

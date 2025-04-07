@@ -60,11 +60,7 @@ export function dlacDecode(data: Uint8Array): string {
 export function decodeGenericText(
     data: Uint8Array
 ): string {
-    const textData: string = dlacDecode(data);
-
-    console.log(`    GENERIC TEXT: textData=${textData}`);
-
-    return textData;
+    return dlacDecode(data);
 }
 
 /**
@@ -76,10 +72,13 @@ export function decodeAirmet(
     data: Uint8Array
 ): string | null {
     const recordFormat: number = ((data[0]) & 0xF0) >> 4;
+
+    /*
     const productVersion: number = ((data[0]) & 0x0F);
     const recordCount: number = ((data[1]) & 0xF0) >> 4;
     const locationIdentifier: string = dlacDecode(data.subarray(2, 5));
     const recordReference: number = ((data[5])); //FIXME: Special values. 0x00 means "use location_identifier". 0xFF means "use different reference". (4-3).
+    */
 
     if (recordFormat == 2) {
         const recordLength: number = ((data[6]) << 8) | (data[7]);
@@ -89,21 +88,19 @@ export function decodeAirmet(
             return;
         }
         // Report identifier = report number + report year.
+        /*
         const reportNumber: number = ((data[8]) << 6) | (((data[9]) & 0xFC) >> 2);
         const reportYear: number = (((data[9]) & 0x03) << 5) | (((data[10]) & 0xF8) >> 3);
         const reportStatus: number = ((data[10]) & 0x04) >> 2; //TODO: 0 = cancelled, 1 = active.
+        */
         const textDataLength: number = recordLength - 5;
         const textData: string = dlacDecode(data.subarray(11, 11 + textDataLength - 1));
-
-        console.log(`    AIRMET: recordFormat=${recordFormat}, productVersion=${productVersion}, recordCount=${recordCount}, locationIdentifier=${locationIdentifier}, recordReference=${recordReference}, recordLength=${recordLength}, reportNumber=${reportNumber}, reportYear=${reportYear}, reportStatus=${reportStatus}, textDataLength=${textDataLength}, textData=${textData}`);
 
         return textData;
     }
     else {
         console.error(`Unknown format=${recordFormat}`);
     }
-
-    console.log(`    AIRMET: recordFormat=${recordFormat}, productVersion=${productVersion}, recordCount=${recordCount}, locationIdentifier=${locationIdentifier}, recordReference=${recordReference}`);
 
     return null;
 }

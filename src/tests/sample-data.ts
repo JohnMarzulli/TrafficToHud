@@ -38,8 +38,7 @@ export function loadExamples(): void {
                 const packageAscci: number[] = byteStrings.map(byteString => parseInt(byteString));
                 const rawMessage = String.fromCharCode(...packageAscci);
 
-                const gdl90Message = new Gdl90Message(rawMessage);
-                console.log(gdl90Message.decodedMessage);
+                const _ = new Gdl90Message(rawMessage);
             }
         } catch (err) {
             console.error('Error loading or parsing JSON file:', err);

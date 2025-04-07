@@ -33,8 +33,7 @@ function loadExamples() {
                 var byteStrings = ("126," + reportText + ",126").split(',');
                 var packageAscci = byteStrings.map(function (byteString) { return parseInt(byteString); });
                 var rawMessage = String.fromCharCode.apply(String, packageAscci);
-                var gdl90Message = new gdl90_message_1.Gdl90Message(rawMessage);
-                console.log(gdl90Message.decodedMessage);
+                var _ = new gdl90_message_1.Gdl90Message(rawMessage);
             }
         }
         catch (err) {

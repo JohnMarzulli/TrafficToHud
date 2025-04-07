@@ -126,14 +126,10 @@ export class UatUplinkFrame {
         let minutes: number = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         const padding = frame[3] & 0b00001111;
 
-        console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
+        //console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
 
         // NEXRAD
-        if (productId == 63) {
-            if (padding != 0) {
-                console.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
-            }
-
+        if (productId == 63 && padding === 0) {
             this.decodeNexradRegional(frame, isSouthernHemisphere);
         }
         // NOTAM is 8
@@ -267,7 +263,7 @@ export class UatUplinkFrame {
 }
 
 export class Uplink extends DecodedGdl90Message {
-    public readonly timeOfReception: number;
+public readonly timeOfReception: number;
     public readonly applicationHeader: Uint8Array;
     public readonly frames: UatUplinkFrame[] = [];
     public readonly senderLocation: Coordinate;
@@ -278,7 +274,7 @@ export class Uplink extends DecodedGdl90Message {
         // Application header and frame format
         // is from https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
         // page 31
-        super(LogLevel.all);
+        super(LogLevel.error);
 
         assert(message.message[1] == 7);
 
