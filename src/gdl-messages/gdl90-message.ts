@@ -12,19 +12,41 @@ import { StratuxStatus } from "./stratux-status";
 import { Traffic } from "./traffic";
 import { Uplink } from "./uplink";
 
+/**
+ * A GDL90 message that has been received and decoded.
+ * Stores the raw message, details, and the decoded message.
+ */
 export class Gdl90Message {
+    /**
+     * The time the message was received and decoded.
+     */
     public readonly receivedAt: number;
+
+    /**
+     * The UAT UPLINK message type.
+     */
     public readonly messageType: number;
+
+    /**
+     * The undecoded message string.
+     */
     public readonly rawMessage: string;
+
+    /**
+     * The undecoded message bytes. Same as the string, but in a byte array.
+     */
     public readonly message: Uint8Array;
 
+    /**
+     * The decoded message object. Could be any type of message.
+     */
     public readonly decodedMessage: DecodedGdl90Message;
 
     constructor(
-        raw_message: string
+        rawMessage: string
     ) {
         this.receivedAt = Date.now();
-        this.rawMessage = raw_message.trim();
+        this.rawMessage = rawMessage.trim();
         this.message = unescapeData(getBytes(this.rawMessage));
         this.messageType = Number(this.message[1].toString());
         this.decodedMessage = getDecodedMessage(this);

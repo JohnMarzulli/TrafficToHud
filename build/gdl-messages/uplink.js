@@ -116,107 +116,21 @@ var UatUplinkFrame = /** @class */ (function () {
             console.error("Frame is too short to be valid!");
             return;
         }
-        var isMonthDayValid = false;
-        var isSecondsValid = false;
-        var month = 0;
-        var day = 0;
-        var seconds = 0;
-        var length = 0;
-        var data = null;
-        var aFlag = (frame[0] & 0x80) != 0;
-        var gFlag = (frame[0] & 0x40) != 0;
-        var pFlag = (frame[0] & 0x20) != 0;
         var productId = ((frame[0] & 0x1f) << 6) | (frame[1] >> 2);
         var isSouthernHemisphere = (frame[1] & 0x02) != 0;
-        var opt = ((this.frame[1] & 0x01) << 1) | ((this.frame[2] >> 7));
-        var hours = (frame[2] & 0x7c) >> 2;
-        var minutes = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         var padding = frame[3] & 15;
-        //console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
+        logFrame(frame, productId);
         // NEXRAD
-        if (productId == 63 && padding === 0) {
+        if (isNexradProduct(productId, padding)) {
             this.decodeNexradRegional(frame, isSouthernHemisphere);
         }
-        // NOTAM is 8
-        // AIRMET is 11
-        // SIGMET is 12
-        else if (productId == 8
-            || productId == 11
-            || productId == 12) {
-            isMonthDayValid = true;
-            isSecondsValid = false;
-            month = (frame[2] & 0x78) >> 3;
-            day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
-            hours = (frame[3] & 0x3e) >> 1;
-            minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
-            length = frame.length - 5; // ???
-            data = frame.subarray(5);
-            var report = airmet_1.decodeAirmet(data);
+        else if (isAirmetProduct(productId)) {
+            var report = airmet_1.decodeAirmet(frame.subarray(5));
             text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
         }
-        else if (productId == 19) { // Very unknown. No guess
-        }
-        // Textual METAR or TAF is 413
-        else if (productId == 405 || productId == 413) {
+        else if (isMetarOrTafProduct(productId)) {
             var report = airmet_1.decodeGenericText(frame.subarray(4));
             text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
-        }
-        else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
-        }
-        else if (productId == 1037) { // some sort of mixed text and graphical product 
-        }
-        else {
-            /*
-            for (let offset = 0; ++offset; offset < length) {
-                decodeGenericText(frame.subarray(offset));
-            }
-            */
-            console.error("Unable to decode productId=" + productId);
-        }
-        switch (opt) {
-            case 0: // Hours, Minutes
-                isMonthDayValid = false;
-                isSecondsValid = false;
-                length = frame.length - 4;
-                data = frame.subarray(4);
-                break;
-            case 1: // Hours, Minutes, Seconds
-                if (frame.length < 5) {
-                    break;
-                }
-                isMonthDayValid = false;
-                isSecondsValid = true;
-                seconds = ((frame[3] & 0x0f) << 2) | (frame[4] >> 6);
-                length = frame.length - 5;
-                data = frame.subarray(5);
-                break;
-            case 2: // Month, Day, Hours, Minutes
-                if (frame.length < 5) {
-                    break;
-                }
-                isMonthDayValid = true;
-                isSecondsValid = false;
-                month = (frame[2] & 0x78) >> 3;
-                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
-                hours = (frame[3] & 0x3e) >> 1;
-                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
-                length = frame.length - 5; // ???
-                data = frame.subarray(5);
-                break;
-            case 3: // Month, Day, Hours, Minutes, Seconds
-                if (frame.length < 6) {
-                    break;
-                }
-                isMonthDayValid = true;
-                isSecondsValid = true;
-                month = (frame[2] & 0x78) >> 3;
-                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
-                hours = (frame[3] & 0x3e) >> 1;
-                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
-                seconds = ((frame[4] & 0x03) << 3) | (frame[5] >> 5);
-                length = frame.length - 6;
-                data = frame.subarray(6);
-                break;
         }
     }
     UatUplinkFrame.prototype.decodeNexradRegional = function (frame, isSouthernHemisphere) {
@@ -308,6 +222,7 @@ function getUplinkFrames(payload) {
         if (remainingBytes < 2 + frameLength) {
             if (frameLength > 0) {
                 console.error("Hit an overrun of the UAT application data while decoding Uplink message!");
+                //return [];
             }
             break;
         }
@@ -315,6 +230,11 @@ function getUplinkFrames(payload) {
             var reserved = void 0;
             var frameType = void 0;
             _a = getReservedAndFrameType(payload), reserved = _a[0], frameType = _a[1];
+            /*
+            if (reserved !== 0 && frameType !== 0) {
+                return [];
+            }
+            */
             var frameData = payload.subarray(2, frameLength + 2);
             var frame = new UatUplinkFrame(reserved, frameType, frameData);
             frames.push(frame);
@@ -385,6 +305,35 @@ function getCoordinateBoundariesFromBlockReferenceId(blockReferenceIdentifier, i
     var southLatitude = northLatitude - latSize;
     var eastLongitude = westLongitude + lonSize;
     return new boundaries_1.CoordinateBoundaries(latSize / 4.0, BlockWidth / 32.0, new coordinate_1.Coordinate(westLongitude, northLatitude), new coordinate_1.Coordinate(eastLongitude, southLatitude));
+}
+function isNexradProduct(productId, padding) {
+    return productId == 63 && padding === 0;
+}
+function isAirmetProduct(productId) {
+    // NOTAM is 8
+    // AIRMET is 11
+    // SIGMET is 12
+    return (productId == 8
+        || productId == 11
+        || productId == 12);
+}
+function isMetarOrTafProduct(productId) {
+    // Textual METAR or TAF is 413
+    return (productId == 405 || productId == 413);
+}
+function logFrame(frame, productId) {
+    var aFlag = (frame[0] & 0x80) != 0;
+    var gFlag = (frame[0] & 0x40) != 0;
+    var pFlag = (frame[0] & 0x20) != 0;
+    var isSouthernHemisphere = (frame[1] & 0x02) != 0;
+    var opt = ((frame[1] & 0x01) << 1) | ((frame[2] >> 7));
+    var hours = (frame[2] & 0x7c) >> 2;
+    var minutes = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
+    var padding = frame[3] & 15;
+    console.log("    FRAME: product=" + productId + ", name=\"" + getFisbProductName(productId) + "\", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
+    console.log("    ------ START ------");
+    console.log("" + frame);
+    console.log("    ------ END ------");
 }
 function decodePayloadFromSample() {
     var payloads = [getPayloadFromSample(faaExampleNexradOregonFirstHalf), getPayloadFromSample(faaExampleNexradOregonSecondHalf)];

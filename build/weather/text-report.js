@@ -21,7 +21,10 @@ var TextReport = /** @class */ (function () {
         if (match) {
             this.station = match[1].trim();
             // This is to work around EOL characters in large text blocks.
-            var textReport = rawReport.substring(rawReport.indexOf(this.station) + this.station.length).trim();
+            var textReport = this.reportType === report_type_1.ReportType.Text
+                ? rawReport
+                : rawReport.substring(rawReport.indexOf(this.station) + this.station.length);
+            textReport = textReport.trim();
             textReport = textReport.replace(/ +/g, ' ');
             var separatorIndex = textReport.indexOf('\u001E');
             if (separatorIndex !== -1) {
@@ -39,20 +42,22 @@ var TextReport = /** @class */ (function () {
         return (Date.now() - this.reportTime) / 1000;
     };
     TextReport.prototype.getReportType = function (rawReport) {
-        if (rawReport == null || rawReport == undefined) {
-            return report_type_1.ReportType.Text;
-        }
+        var detectedType = report_type_1.ReportType.Text;
         var normalizedReport = rawReport.toLowerCase();
-        if (normalizedReport.includes("airmet ")) {
-            return report_type_1.ReportType.Airmet;
+        if (rawReport == null || rawReport == undefined) {
+            detectedType = report_type_1.ReportType.Text;
         }
-        if (normalizedReport.includes("metar ")) {
-            return report_type_1.ReportType.Metar;
+        else if (normalizedReport.includes("airmet ")) {
+            detectedType = report_type_1.ReportType.Airmet;
         }
-        if (normalizedReport.includes("taf ")) {
-            return report_type_1.ReportType.Taf;
+        else if (normalizedReport.includes("metar ")) {
+            detectedType = report_type_1.ReportType.Metar;
         }
-        return report_type_1.ReportType.Text;
+        else if (normalizedReport.includes("taf ")) {
+            detectedType = report_type_1.ReportType.Taf;
+        }
+        // Includes "no4am" which is a NOTAM
+        return detectedType;
     };
     return TextReport;
 }());

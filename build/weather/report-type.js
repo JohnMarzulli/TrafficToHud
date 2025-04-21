@@ -7,7 +7,7 @@ exports.ReportType = void 0;
 var ReportType;
 (function (ReportType) {
     /**
-     * A pure text report.
+     * A pure text report. Will also include NOTAMs.
      */
     ReportType["Text"] = "TEXT";
     /**

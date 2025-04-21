@@ -66,8 +66,11 @@ export class TextReport {
         if (match) {
             this.station = match[1].trim();
             // This is to work around EOL characters in large text blocks.
-            let textReport: string = rawReport.substring(rawReport.indexOf(this.station) + this.station.length).trim();
+            let textReport: string = this.reportType === ReportType.Text
+                ? rawReport
+                : rawReport.substring(rawReport.indexOf(this.station) + this.station.length);
 
+            textReport = textReport.trim();
             textReport = textReport.replace(/ +/g, ' ');
 
             const separatorIndex = textReport.indexOf('\u001E');
@@ -85,24 +88,24 @@ export class TextReport {
     private getReportType(
         rawReport: string
     ): ReportType {
-        if (rawReport == null || rawReport == undefined) {
-            return ReportType.Text;
-        }
+        let detectedType: ReportType = ReportType.Text;
 
         const normalizedReport: string = rawReport.toLowerCase();
 
-        if (normalizedReport.includes("airmet ")) {
-            return ReportType.Airmet;
+        if (rawReport == null || rawReport == undefined) {
+            detectedType = ReportType.Text;
+        }
+        else if (normalizedReport.includes("airmet ")) {
+            detectedType = ReportType.Airmet;
+        }
+        else if (normalizedReport.includes("metar ")) {
+            detectedType = ReportType.Metar;
+        }
+        else if (normalizedReport.includes("taf ")) {
+            detectedType = ReportType.Taf;
         }
 
-        if (normalizedReport.includes("metar ")) {
-            return ReportType.Metar;
-        }
-
-        if (normalizedReport.includes("taf ")) {
-            return ReportType.Taf;
-        }
-
-        return ReportType.Text;
+        // Includes "no4am" which is a NOTAM
+        return detectedType;
     }
 }

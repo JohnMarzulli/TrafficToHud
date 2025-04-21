@@ -55,6 +55,10 @@ var TextReports = /** @class */ (function () {
      * @param report The report to add.
      */
     TextReports.addReport = function (report) {
+        // Make sure partial transmissions, or other incomplete METAR/TAFs do not make it into the system.
+        if (report.station === "UNK" && (report.reportType === report_type_1.ReportType.Metar || report.reportType === report_type_1.ReportType.Taf)) {
+            return;
+        }
         var criterion = function (obj) { return obj.reportType === report.reportType && obj.station === report.station; };
         var index = TextReports.reports.findIndex(criterion);
         if (index >= 0) {

@@ -13,6 +13,8 @@ exports.faaExampleNexradOregonFirstHalf = "130000FC000084A570308950111A531209301
 function loadExamples() {
     uplink_1.decodePayloadFromSample();
     var exampleFiles = [
+        '../../documentation/weird-metar-decode.json',
+        '../../documentation/more-weird-metar.json',
         '../../documentation/full-nexrad.json',
         '../../documentation/full-asa379.json',
         '../../documentation/full-lots-nexrad.json',

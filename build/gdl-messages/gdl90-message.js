@@ -13,10 +13,14 @@ var stratux_heartbeat_1 = require("./stratux-heartbeat");
 var stratux_status_1 = require("./stratux-status");
 var traffic_1 = require("./traffic");
 var uplink_1 = require("./uplink");
+/**
+ * A GDL90 message that has been received and decoded.
+ * Stores the raw message, details, and the decoded message.
+ */
 var Gdl90Message = /** @class */ (function () {
-    function Gdl90Message(raw_message) {
+    function Gdl90Message(rawMessage) {
         this.receivedAt = Date.now();
-        this.rawMessage = raw_message.trim();
+        this.rawMessage = rawMessage.trim();
         this.message = data_handling_1.unescapeData(data_handling_1.getBytes(this.rawMessage));
         this.messageType = Number(this.message[1].toString());
         this.decodedMessage = getDecodedMessage(this);

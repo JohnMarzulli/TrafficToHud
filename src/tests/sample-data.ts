@@ -14,6 +14,8 @@ export function loadExamples(): void {
     decodePayloadFromSample();
 
     const exampleFiles: string[] = [
+        '../../documentation/weird-metar-decode.json',
+        '../../documentation/more-weird-metar.json',
         '../../documentation/full-nexrad.json',
         '../../documentation/full-asa379.json',
         '../../documentation/full-lots-nexrad.json',

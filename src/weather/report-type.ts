@@ -5,7 +5,7 @@
 
 export enum ReportType {
     /**
-     * A pure text report.
+     * A pure text report. Will also include NOTAMs.
      */
     Text = "TEXT",
 

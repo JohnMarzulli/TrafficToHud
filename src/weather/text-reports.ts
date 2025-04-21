@@ -74,6 +74,11 @@ export class TextReports {
     public static addReport(
         report: TextReport,
     ): void {
+        // Make sure partial transmissions, or other incomplete METAR/TAFs do not make it into the system.
+        if (report.station === "UNK" && (report.reportType === ReportType.Metar || report.reportType === ReportType.Taf)) {
+            return;
+        }
+
         const criterion = (obj: TextReport) => obj.reportType === report.reportType && obj.station === report.station;
         const index = TextReports.reports.findIndex(criterion);
 
