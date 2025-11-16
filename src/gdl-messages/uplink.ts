@@ -368,10 +368,11 @@ function getCoordinateBoundariesFromBlockReferenceId(
         new Coordinate(eastLongitude, southLatitude));
 }
 
-function isNexradProduct(productId, padding) {
+function isNexradProduct(productId: number, padding: number): boolean {
     return productId == 63 && padding === 0;
 }
-function isAirmetProduct(productId) {
+
+function isAirmetProduct(productId: number): boolean {
     // NOTAM is 8
     // AIRMET is 11
     // SIGMET is 12
@@ -380,7 +381,8 @@ function isAirmetProduct(productId) {
         || productId == 11
         || productId == 12);
 }
-function isMetarOrTafProduct(productId) {
+
+function isMetarOrTafProduct(productId: number): boolean {
     // Textual METAR or TAF is 413
 
     return (productId == 405 || productId == 413);
