@@ -28,19 +28,37 @@ These installation steps are intended for developers or those who wish to instal
 npm install
 ```
 
-If you wish to run the service at startup:
+### Issues With Node
+
+On Bookworm, 18 appears to be the most recent version.
+
+First NodeJS and npm must be uninstalled using `apt`, then:
 
 ```bash
-crontab -e
+npm install
+sudo npm install -g typescript
 ```
 
-Insert the following line:
+### Data Downloads
 
-```bash
-@reboot nodejs       /home/pi/TrafficToHud/build/traffic_manager.js &
+From: https://adds-faa.opendata.arcgis.com/search?collection=Dataset
+
+Airports CSV: https://adds-faa.opendata.arcgis.com/datasets/e747ab91a11045e8b3f8a3efd093d3b5_0/explore?location=4.003400%2C-1.633886%2C2.43
+Airport Frequencies (NASR, Frequency Data (FRQ)) : https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/NASR_Subscription/2025-02-20/ 
+Runways CSV: https://adds-faa.opendata.arcgis.com/datasets/4d8fa46181aa470d809776c57a8ab1f6_0/explore?location=5.724382%2C-1.628771%2C2.63
+Frequencies JSON: https://adds-faa.opendata.arcgis.com/datasets/16966d553d454cca9706d2ce32b14d31_0/explore
+Airspace JSON: https://adds-faa.opendata.arcgis.com/datasets/c6a62360338e408cb1512366ad61559e_0/explore?location=7.543542%2C-5.669382%2C2.65
+NASR: https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/NASR_Subscription/
+
+### Development Tools
+
+Madge is used to find and prevent circular dependancies. (<https://github.com/pahen/madge>)
+
+```powershell
+madge  --orphans .\traffic-manager.ts;
+madge  --circular .\traffic-manager.ts;
 ```
 
-Save and close.
 
 ### Revision History
 

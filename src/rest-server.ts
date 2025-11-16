@@ -1,0 +1,152 @@
+// Shamelessly borrowed from https://mherman.org/blog/developing-a-restful-api-with-node-and-typescript/
+// https://stackoverflow.com/questions/38802959/how-to-lock-on-object-which-shared-by-multiple-async-method-in-nodejs
+
+import * as bodyParser from "body-parser";
+import * as express from "express";
+import * as logger from "morgan";
+import { Gdl90Client } from "./clients/gdl90-client";
+import { RadarClient } from "./clients/radar-client";
+import { StatusClient } from "./clients/status-client";
+import { TrafficClient } from "./clients/traffic-client";
+import { getAirports, getFrequencies, loadAirports, loadFrequencies } from "./locations/airports";
+import { loadExamples } from "./tests/sample-data";
+import { ReflectivityRadar } from "./weather/nexrad";
+import { TextReports } from "./weather/text-reports";
+
+/**
+ * Service class that exposes the Traffic Client to the
+ * rest of the world as a RESTful API.
+ *
+ * @class RestServer
+ */
+class RestServer {
+  // ref to Express instance
+  public express: express.Application;
+  private static readonly statusClient: StatusClient = new StatusClient();
+  private static readonly radarClient: RadarClient = new RadarClient();
+  private static readonly gdl90Client: Gdl90Client = new Gdl90Client();
+
+  // Making the sockets static and then having static handlers is
+  // a horrific side effect of TS/JS and the object model it uses.
+  // The calls to the Socket get a "this" value that points
+  // to the BASE EXPRESS INSTANCE, not the handler's instance.
+
+  private static GetStatusStatus(req: Request): any { return RestServer.statusClient.getServiceStatus(req); }
+  private static GetStatusResponse(req: Request): any { return RestServer.statusClient.getServiceResponse(req); }
+
+
+  private static GetRadarStatus(req: Request): any { return RestServer.radarClient.getServiceStatus(req); }
+  private static GetRadarResponse(req: Request): any { return RestServer.radarClient.getServiceResponse(req); }
+
+  private static GetGdl90Status(req: Request): any { return RestServer.gdl90Client.getServiceStatus(req); }
+  private static GetGdl90Response(req: Request): any { return RestServer.gdl90Client.getServiceResponse(req); }
+
+  /**
+   * Returns the information about the service.
+   * Intended to be used for compatibility checks
+   * and the diagnostics view.
+   *
+   * @private
+   * @returns {*}
+   * @memberof RestServer
+   */
+  private getServiceInfoResponseBody(req: Request): any {
+    return {
+      server: {
+        name: "StratuxHud",
+        version: "1.7.1"
+      }
+    };
+  }
+
+  /**
+   * Performs a reset of the WebSocket + reconnect
+   * and then returns a response body to indicate the success
+   *
+   * @private
+   * @returns {*}
+   * @memberof RestServer
+   */
+  private getServiceResetResponseBody(req: Request): any {
+    TrafficClient.resetWebSocketClient();
+    RestServer.radarClient.reset();
+    RestServer.statusClient.reset();
+    RestServer.gdl90Client.reset();
+
+    return {
+      resetTime: new Date().toUTCString()
+    };
+  }
+
+  /**
+   * Creates an instance of RestServer to serve up
+   * the data collected from the WebSocket as a RESTful service.
+   * @memberof RestServer
+   */
+  constructor() {
+    this.express = express();
+    this.middleware();
+    this.routes();
+
+    loadAirports();
+    loadFrequencies();
+
+    if (process.argv.includes("--load-examples")) {
+      loadExamples();
+    }
+  }
+
+  // Configure Express middleware.
+  private middleware(): void {
+    this.express.use(logger("dev"));
+    this.express.use(bodyParser.json());
+    this.express.use(bodyParser.urlencoded({ extended: false }));
+  }
+
+  /**
+   * Create all of the routing from API endpoint to delegates
+   *
+   * @private
+   * @memberof RestServer
+   */
+  private routes(): void {
+    let router = express.Router();
+
+    let mapping = {
+      "/": this.getServiceInfoResponseBody,
+      "/Service/Info": this.getServiceInfoResponseBody,
+      "/Service/Reset": this.getServiceResetResponseBody,
+      "/Service/Status": TrafficClient.getServiceStatusResponseBody,
+      "/Traffic/Summary": TrafficClient.getTrafficOverviewResponseBody,
+      "/Traffic/Full": TrafficClient.getTrafficFullResponseBody,
+      "/Traffic/Reliable": TrafficClient.getTrafficReliableResponseBody,
+      "/Traffic/:id": TrafficClient.getTrafficDetailsResponseBody,
+      "/Status/Status": RestServer.GetStatusStatus,
+      "/Status/Full": RestServer.GetStatusResponse,
+      "/Radar/Status": RestServer.GetRadarStatus,
+      "/Radar/Full": RestServer.GetRadarResponse,
+      "/Gdl90/Status": RestServer.GetGdl90Status,
+      "/Gdl90/Full": RestServer.GetGdl90Response,
+      "/Weather/Reflectivity": ReflectivityRadar.getReflectivity,
+      "/Weather/TextReports": TextReports.getReports,
+      "/Weather/FlightRules": TextReports.getKnownFlightRules,
+      "/airports/Airports": getAirports,
+      "/airports/Frequencies": getFrequencies
+    };
+
+    Object.keys(mapping).forEach(key => {
+      router.get(key, (req, res, next) => {
+        res.json(mapping[key](req));
+      });
+    });
+
+    // NOTE:
+    // The "use root" appears to be required
+    // for the Express routing to actually work.
+    Object.keys(mapping).forEach(route => {
+      this.express.use(route, router);
+    });
+  }
+}
+
+export default new RestServer().express;

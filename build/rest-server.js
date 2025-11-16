@@ -1,0 +1,136 @@
+"use strict";
+// Shamelessly borrowed from https://mherman.org/blog/developing-a-restful-api-with-node-and-typescript/
+// https://stackoverflow.com/questions/38802959/how-to-lock-on-object-which-shared-by-multiple-async-method-in-nodejs
+Object.defineProperty(exports, "__esModule", { value: true });
+var bodyParser = require("body-parser");
+var express = require("express");
+var logger = require("morgan");
+var gdl90_client_1 = require("./clients/gdl90-client");
+var radar_client_1 = require("./clients/radar-client");
+var status_client_1 = require("./clients/status-client");
+var traffic_client_1 = require("./clients/traffic-client");
+var airports_1 = require("./locations/airports");
+var sample_data_1 = require("./tests/sample-data");
+var nexrad_1 = require("./weather/nexrad");
+var text_reports_1 = require("./weather/text-reports");
+/**
+ * Service class that exposes the Traffic Client to the
+ * rest of the world as a RESTful API.
+ *
+ * @class RestServer
+ */
+var RestServer = /** @class */ (function () {
+    /**
+     * Creates an instance of RestServer to serve up
+     * the data collected from the WebSocket as a RESTful service.
+     * @memberof RestServer
+     */
+    function RestServer() {
+        this.express = express();
+        this.middleware();
+        this.routes();
+        airports_1.loadAirports();
+        airports_1.loadFrequencies();
+        if (process.argv.includes("--load-examples")) {
+            sample_data_1.loadExamples();
+        }
+    }
+    // Making the sockets static and then having static handlers is
+    // a horrific side effect of TS/JS and the object model it uses.
+    // The calls to the Socket get a "this" value that points
+    // to the BASE EXPRESS INSTANCE, not the handler's instance.
+    RestServer.GetStatusStatus = function (req) { return RestServer.statusClient.getServiceStatus(req); };
+    RestServer.GetStatusResponse = function (req) { return RestServer.statusClient.getServiceResponse(req); };
+    RestServer.GetRadarStatus = function (req) { return RestServer.radarClient.getServiceStatus(req); };
+    RestServer.GetRadarResponse = function (req) { return RestServer.radarClient.getServiceResponse(req); };
+    RestServer.GetGdl90Status = function (req) { return RestServer.gdl90Client.getServiceStatus(req); };
+    RestServer.GetGdl90Response = function (req) { return RestServer.gdl90Client.getServiceResponse(req); };
+    /**
+     * Returns the information about the service.
+     * Intended to be used for compatibility checks
+     * and the diagnostics view.
+     *
+     * @private
+     * @returns {*}
+     * @memberof RestServer
+     */
+    RestServer.prototype.getServiceInfoResponseBody = function (req) {
+        return {
+            server: {
+                name: "StratuxHud",
+                version: "1.7.1"
+            }
+        };
+    };
+    /**
+     * Performs a reset of the WebSocket + reconnect
+     * and then returns a response body to indicate the success
+     *
+     * @private
+     * @returns {*}
+     * @memberof RestServer
+     */
+    RestServer.prototype.getServiceResetResponseBody = function (req) {
+        traffic_client_1.TrafficClient.resetWebSocketClient();
+        RestServer.radarClient.reset();
+        RestServer.statusClient.reset();
+        RestServer.gdl90Client.reset();
+        return {
+            resetTime: new Date().toUTCString()
+        };
+    };
+    // Configure Express middleware.
+    RestServer.prototype.middleware = function () {
+        this.express.use(logger("dev"));
+        this.express.use(bodyParser.json());
+        this.express.use(bodyParser.urlencoded({ extended: false }));
+    };
+    /**
+     * Create all of the routing from API endpoint to delegates
+     *
+     * @private
+     * @memberof RestServer
+     */
+    RestServer.prototype.routes = function () {
+        var _this = this;
+        var router = express.Router();
+        var mapping = {
+            "/": this.getServiceInfoResponseBody,
+            "/Service/Info": this.getServiceInfoResponseBody,
+            "/Service/Reset": this.getServiceResetResponseBody,
+            "/Service/Status": traffic_client_1.TrafficClient.getServiceStatusResponseBody,
+            "/Traffic/Summary": traffic_client_1.TrafficClient.getTrafficOverviewResponseBody,
+            "/Traffic/Full": traffic_client_1.TrafficClient.getTrafficFullResponseBody,
+            "/Traffic/Reliable": traffic_client_1.TrafficClient.getTrafficReliableResponseBody,
+            "/Traffic/:id": traffic_client_1.TrafficClient.getTrafficDetailsResponseBody,
+            "/Status/Status": RestServer.GetStatusStatus,
+            "/Status/Full": RestServer.GetStatusResponse,
+            "/Radar/Status": RestServer.GetRadarStatus,
+            "/Radar/Full": RestServer.GetRadarResponse,
+            "/Gdl90/Status": RestServer.GetGdl90Status,
+            "/Gdl90/Full": RestServer.GetGdl90Response,
+            "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
+            "/Weather/TextReports": text_reports_1.TextReports.getReports,
+            "/Weather/FlightRules": text_reports_1.TextReports.getKnownFlightRules,
+            "/airports/Airports": airports_1.getAirports,
+            "/airports/Frequencies": airports_1.getFrequencies
+        };
+        Object.keys(mapping).forEach(function (key) {
+            router.get(key, function (req, res, next) {
+                res.json(mapping[key](req));
+            });
+        });
+        // NOTE:
+        // The "use root" appears to be required
+        // for the Express routing to actually work.
+        Object.keys(mapping).forEach(function (route) {
+            _this.express.use(route, router);
+        });
+    };
+    RestServer.statusClient = new status_client_1.StatusClient();
+    RestServer.radarClient = new radar_client_1.RadarClient();
+    RestServer.gdl90Client = new gdl90_client_1.Gdl90Client();
+    return RestServer;
+}());
+exports.default = new RestServer().express;
+//# sourceMappingURL=rest-server.js.map

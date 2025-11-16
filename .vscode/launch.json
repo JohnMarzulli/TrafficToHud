@@ -8,10 +8,131 @@
             "type": "node",
             "request": "launch",
             "name": "TrafficToHud",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/build/traffic_manager.js"
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/traffic-manager.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "TrafficToHud (TEST DATA)",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/traffic-manager.js",
+            "args": ["--load-examples"],
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: METAR",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/metar.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Text product decoding",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/airmet.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Coordinate distance",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/distance.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Airport search",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/airports.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: data-handling",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/data-handling.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: nexrad-decoding",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/nexrad-decoding.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Text Report (METAR & TAF)",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/text-report.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Unit Tests: Text Reports Collation",
+            //"skipFiles": [
+            //    "<node_internals>/**"
+            //],
+            "program": "${workspaceFolder}/build/tests/text-reports.test.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "ProcessExampleMessages",
+            "program": "${workspaceFolder}/build/load-examples.js",
+            "outFiles": [
+                "${workspaceFolder}/build/**/*.js"
+            ]
         }
     ]
 }

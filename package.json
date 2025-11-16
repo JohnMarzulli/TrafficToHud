@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./build/tests/airmet.test.js && node ./build/tests/airports.test.js && node ./build/tests/data-handling.test.js && node ./build/tests/distance.test.js && node ./build/tests/metar.test.js && node ./build/tests/nexrad-decoding.test.js && node ./build/tests/text-report.test.js && node ./build/tests/text-reports.test.js"
   },
   "keywords": [],
   "author": "",
