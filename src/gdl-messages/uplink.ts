@@ -8,6 +8,9 @@ import { TextReport } from '../weather/text-report';
 import { decodeAirmet, decodeGenericText } from "./airmet";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
+import { DiskLogger } from "../disk-logger";
+
+const uplinkLogger: DiskLogger = new DiskLogger("Uplink");
 
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
@@ -103,7 +106,7 @@ export class UatUplinkFrame {
         this.frame = frame;
 
         if (frame.length < 4) {
-            console.error("Frame is too short to be valid!");
+            uplinkLogger.error("Frame is too short to be valid!");
 
             return;
         }
@@ -114,7 +117,7 @@ export class UatUplinkFrame {
         let day: number = 0;
         let seconds: number = 0;
         let length: number = 0;
-        let data: Uint8Array = null;
+        let data: Uint8Array;
 
         const aFlag: boolean = (frame[0] & 0x80) != 0;
         const gFlag: boolean = (frame[0] & 0x40) != 0;
@@ -126,12 +129,14 @@ export class UatUplinkFrame {
         let minutes: number = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         const padding = frame[3] & 0b00001111;
 
-        console.log(`    FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
+        uplinkLogger.log(`--START--`);
+        uplinkLogger.log(`FRAME: product=${productId}, name=${getFisbProductName(productId)}, opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
+        uplinkLogger.log(`RAW  : ${Array.from(frame).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
 
         // NEXRAD
         if (productId == 63) {
             if (padding != 0) {
-                console.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
+                uplinkLogger.error(`Padding is not zero. Probable decoding error. padding=${padding}`);
             }
 
             this.decodeNexradRegional(frame, isSouthernHemisphere);
@@ -151,15 +156,19 @@ export class UatUplinkFrame {
             length = frame.length - 5; // ???
             data = frame.subarray(5);
 
-            const report: string = decodeAirmet(data);
+            const report: string | null = decodeAirmet(data);
 
-            TextReports.addReport(new TextReport(report));
+            if (report !== null) {
+                TextReports.addReport(new TextReport(report));
+            }
         }
         else if (productId == 19) {// Very unknown. No guess
         }
         // Textual METAR or TAF is 413
         else if (productId == 405 || productId == 413) {
             const report: string = decodeGenericText(frame.subarray(4));
+
+            uplinkLogger.log(`Decoded generic text report: ${report}`);
 
             TextReports.addReport(new TextReport(report));
         }
@@ -173,7 +182,7 @@ export class UatUplinkFrame {
                 decodeGenericText(frame.subarray(offset));
             }
             */
-            console.error(`Unable to decode productId=${productId}`);
+            uplinkLogger.error(`Unable to decode productId=${productId}`);
         }
 
         switch (opt) {
@@ -325,11 +334,11 @@ function getReservedAndFrameType(
     const frameType = payload[1] & 0b00001111;
 
     if (reserved != 0) {
-        console.error(`Reserved field is not zero: ${reserved}`);
+        uplinkLogger.error(`Reserved field is not zero: ${reserved}`);
     }
 
     if (frameType != 0) {
-        console.error(`Frame type is not zero: ${frameType}`);
+        uplinkLogger.error(`Frame type is not zero: ${frameType}`);
     }
 
     return [reserved, frameType];
@@ -346,7 +355,7 @@ function getUplinkFrames(
 
         if (remainingBytes < 2 + frameLength) {
             if (frameLength > 0) {
-                console.error("Hit an overrun of the UAT application data while decoding Uplink message!");
+                uplinkLogger.error("Hit an overrun of the UAT application data while decoding Uplink message!");
             }
 
             break;
@@ -470,7 +479,7 @@ export function decodePayloadFromSample() {
         const graphic = payload.subarray(2, frameLength + 2);
 
         if (graphic.length != frameLength) {
-            console.error(`Frame length mismatch: ${graphic.length} != ${frameLength}`);
+            uplinkLogger.error(`Frame length mismatch: ${graphic.length} != ${frameLength}`);
         }
 
         const frameData: Uint8Array = payload.subarray(2, frameLength + 2);
