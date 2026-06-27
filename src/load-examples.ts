@@ -21,7 +21,7 @@ function loadExamples(): void {
 
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
-            const rawMessages: string[] = JSON.parse(fileContent);
+            const rawMessages = JSON.parse(fileContent);
 
             const uat7Reports = rawMessages["last_msg"]["7"];
 
