@@ -23,6 +23,8 @@ var text_reports_1 = require("../weather/text-reports");
 var text_report_1 = require("../weather/text-report");
 var airmet_1 = require("./airmet");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
+var disk_logger_1 = require("../disk-logger");
+var uplinkLogger = new disk_logger_1.DiskLogger("Uplink");
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
 // https://phd-sid.ethz.ch/debian/stratux/stratux-1.5b2/notes/SBS-Description-Doc_SRT_47_rev01_20111024.pdf
@@ -113,7 +115,7 @@ var UatUplinkFrame = /** @class */ (function () {
         this.frameType = frameType;
         this.frame = frame;
         if (frame.length < 4) {
-            console.error("Frame is too short to be valid!");
+            uplinkLogger.error("Frame is too short to be valid!");
             return;
         }
         var isMonthDayValid = false;
@@ -122,7 +124,7 @@ var UatUplinkFrame = /** @class */ (function () {
         var day = 0;
         var seconds = 0;
         var length = 0;
-        var data = null;
+        var data;
         var aFlag = (frame[0] & 0x80) != 0;
         var gFlag = (frame[0] & 0x40) != 0;
         var pFlag = (frame[0] & 0x20) != 0;
@@ -132,11 +134,13 @@ var UatUplinkFrame = /** @class */ (function () {
         var hours = (frame[2] & 0x7c) >> 2;
         var minutes = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         var padding = frame[3] & 15;
-        console.log("    FRAME: product=" + productId + ", name=" + getFisbProductName(productId) + ", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
+        uplinkLogger.log("--START--");
+        uplinkLogger.log("FRAME: product=" + productId + ", name=" + getFisbProductName(productId) + ", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
+        uplinkLogger.log("RAW  : " + Array.from(frame).map(function (b) { return b.toString(16).padStart(2, '0'); }).join(' '));
         // NEXRAD
         if (productId == 63) {
             if (padding != 0) {
-                console.error("Padding is not zero. Probable decoding error. padding=" + padding);
+                uplinkLogger.error("Padding is not zero. Probable decoding error. padding=" + padding);
             }
             this.decodeNexradRegional(frame, isSouthernHemisphere);
         }
@@ -155,13 +159,16 @@ var UatUplinkFrame = /** @class */ (function () {
             length = frame.length - 5; // ???
             data = frame.subarray(5);
             var report = airmet_1.decodeAirmet(data);
-            text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
+            if (report !== null) {
+                text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
+            }
         }
         else if (productId == 19) { // Very unknown. No guess
         }
         // Textual METAR or TAF is 413
         else if (productId == 405 || productId == 413) {
             var report = airmet_1.decodeGenericText(frame.subarray(4));
+            uplinkLogger.log("Decoded generic text report: " + report);
             text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
         }
         else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
@@ -174,7 +181,7 @@ var UatUplinkFrame = /** @class */ (function () {
                 decodeGenericText(frame.subarray(offset));
             }
             */
-            console.error("Unable to decode productId=" + productId);
+            uplinkLogger.error("Unable to decode productId=" + productId);
         }
         switch (opt) {
             case 0: // Hours, Minutes
@@ -299,10 +306,10 @@ function getReservedAndFrameType(payload) {
     // Per spec, any value from 0b0001 to 0b1110 (inclusive) is reserved for future use
     var frameType = payload[1] & 15;
     if (reserved != 0) {
-        console.error("Reserved field is not zero: " + reserved);
+        uplinkLogger.error("Reserved field is not zero: " + reserved);
     }
     if (frameType != 0) {
-        console.error("Frame type is not zero: " + frameType);
+        uplinkLogger.error("Frame type is not zero: " + frameType);
     }
     return [reserved, frameType];
 }
@@ -314,7 +321,7 @@ function getUplinkFrames(payload) {
         var remainingBytes = payload.length - 2;
         if (remainingBytes < 2 + frameLength) {
             if (frameLength > 0) {
-                console.error("Hit an overrun of the UAT application data while decoding Uplink message!");
+                uplinkLogger.error("Hit an overrun of the UAT application data while decoding Uplink message!");
             }
             break;
         }
@@ -405,7 +412,7 @@ function decodePayloadFromSample() {
         var frameType = payload[2] & 1;
         var graphic = payload.subarray(2, frameLength + 2);
         if (graphic.length != frameLength) {
-            console.error("Frame length mismatch: " + graphic.length + " != " + frameLength);
+            uplinkLogger.error("Frame length mismatch: " + graphic.length + " != " + frameLength);
         }
         var frameData = payload.subarray(2, frameLength + 2);
         var decodedFrame = new UatUplinkFrame(0, frameType, frameData);
