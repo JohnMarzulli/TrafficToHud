@@ -33,6 +33,22 @@ export function getAirports(
 }
 
 /**
+ * Returns the expiration dates of the loaded data.
+ * @param req the incoming REST request (ignored)
+ * @returns The set of expiration dates for the loaded airport data.
+ */
+export function getAirportDataStatus(
+    req: Request
+): any {
+    try {
+        return expirations;
+    }
+    catch {
+        return [];
+    }
+}
+
+/**
  * Loads the list of airports from the FAA data.
  */
 export function loadAirports(): void {
@@ -96,5 +112,17 @@ export function getAirportsWithinDistance(
     return foundAirports;
 }
 
+function getExpirations(): any {
+    const expirationsPath = path.resolve(__dirname, '../../data/expirations.json');
+    const expirationsContent = fs.readFileSync(expirationsPath, 'utf-8');
+    const expirations = JSON.parse(expirationsContent);
+    const airportsKey: string = "Airports.csv";
+
+    return {
+        expiration: expirations[airportsKey] ? expirations[airportsKey] : new Date().toISOString()
+    };
+}
+
 const airports: Airport[] = [];
 const airportsByIdent: Map<string, Airport> = new Map<string, Airport>();
+const expirations = getExpirations();
