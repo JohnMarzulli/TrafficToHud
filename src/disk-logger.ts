@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
 /**
  * Class to wrap logging to be somewhat neat.
@@ -7,11 +9,12 @@ export class DiskLogger {
     constructor(
         systemName: string
     ) {
-        const dateTimeFilenamePart = new Date().toISOString().replace(/[:.]/g, '_');
-        this.logFilePath = `${systemName.replace(/\s+/g, '_')}_${dateTimeFilenamePart}.log`;
+        const dateTimeFilenamePart: string = new Date().toISOString().replace(/[:.]/g, '_');
+        const targetFilePath: string = `${systemName.replace(/\s+/g, '_')}_${dateTimeFilenamePart}.log`;;
+        const logFilePath: string = path.join(os.tmpdir(), targetFilePath);
 
         try {
-            this.fileHandle = fs.createWriteStream(this.logFilePath);
+            this.fileHandle = fs.createWriteStream(logFilePath);
         } catch (error) {
             console.error('Failed to create log file:', error);
             this.fileHandle = null;
@@ -52,6 +55,5 @@ export class DiskLogger {
         }
     }
 
-    private readonly logFilePath: string;
     private readonly fileHandle: fs.WriteStream | null;
 }
