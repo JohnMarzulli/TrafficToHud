@@ -2,15 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiskLogger = void 0;
 var fs = require("fs");
+var os = require("os");
+var path = require("path");
 /**
  * Class to wrap logging to be somewhat neat.
  */
 var DiskLogger = /** @class */ (function () {
     function DiskLogger(systemName) {
         var dateTimeFilenamePart = new Date().toISOString().replace(/[:.]/g, '_');
-        this.logFilePath = systemName.replace(/\s+/g, '_') + "_" + dateTimeFilenamePart + ".log";
+        var targetFilePath = systemName.replace(/\s+/g, '_') + "_" + dateTimeFilenamePart + ".log";
+        ;
+        var logFilePath = path.join(os.tmpdir(), targetFilePath);
         try {
-            this.fileHandle = fs.createWriteStream(this.logFilePath);
+            this.fileHandle = fs.createWriteStream(logFilePath);
         }
         catch (error) {
             console.error('Failed to create log file:', error);

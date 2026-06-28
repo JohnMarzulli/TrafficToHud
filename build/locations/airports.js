@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAirportsWithinDistance = exports.loadAirports = exports.getAirports = void 0;
+exports.getAirportsWithinDistance = exports.loadAirports = exports.getAirportDataStatus = exports.getAirports = void 0;
 var fs = require("fs");
 var path = require("path");
 var distance_1 = require("../geography/distance");
@@ -28,6 +28,20 @@ function getAirports(req) {
     }
 }
 exports.getAirports = getAirports;
+/**
+ * Returns the expiration dates of the loaded data.
+ * @param req the incoming REST request (ignored)
+ * @returns The set of expiration dates for the loaded airport data.
+ */
+function getAirportDataStatus(req) {
+    try {
+        return expirations;
+    }
+    catch (_a) {
+        return [];
+    }
+}
+exports.getAirportDataStatus = getAirportDataStatus;
 /**
  * Loads the list of airports from the FAA data.
  */
@@ -74,6 +88,16 @@ function getAirportsWithinDistance(location, distance) {
     return foundAirports;
 }
 exports.getAirportsWithinDistance = getAirportsWithinDistance;
+function getExpirations() {
+    var expirationsPath = path.resolve(__dirname, '../../data/expirations.json');
+    var expirationsContent = fs.readFileSync(expirationsPath, 'utf-8');
+    var expirations = JSON.parse(expirationsContent);
+    var airportsKey = "Airports.csv";
+    return {
+        expiration: expirations[airportsKey] ? expirations[airportsKey] : new Date().toISOString()
+    };
+}
 var airports = [];
 var airportsByIdent = new Map();
+var expirations = getExpirations();
 //# sourceMappingURL=airports.js.map

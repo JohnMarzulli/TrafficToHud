@@ -7,6 +7,12 @@ import { Coordinate } from "../types/coordinate";
  */
 export declare function getAirports(req: Request): any;
 /**
+ * Returns the expiration dates of the loaded data.
+ * @param req the incoming REST request (ignored)
+ * @returns The set of expiration dates for the loaded airport data.
+ */
+export declare function getAirportDataStatus(req: Request): any;
+/**
  * Loads the list of airports from the FAA data.
  */
 export declare function loadAirports(): void;

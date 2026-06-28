@@ -14,6 +14,5 @@ export declare class DiskLogger {
      */
     error(message: string): void;
     private internalLog;
-    private readonly logFilePath;
     private readonly fileHandle;
 }

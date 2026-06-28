@@ -107,7 +107,8 @@ var RestServer = /** @class */ (function () {
             "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
             "/Weather/TextReports": text_reports_1.TextReports.getReports,
             "/Weather/FlightRules": text_reports_1.TextReports.getKnownFlightRules,
-            "/airports/Airports": airports_1.getAirports
+            "/airports/Airports": airports_1.getAirports,
+            "/airports/Status": airports_1.getAirportDataStatus,
         };
         Object.keys(mapping).forEach(function (key) {
             router.get(key, function (req, res, next) {
