@@ -35,12 +35,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
 var path = require("path");
+var data_handling_1 = require("./data-handling");
 var gdl90_message_1 = require("./gdl-messages/gdl90-message"); // Assuming Gdl90Message is in this file
 var uplink_1 = require("./gdl-messages/uplink"); // Assuming decodePayloadFromSample is in this file
 function loadExamples() {
+    var _a;
     uplink_1.decodePayloadFromSample();
     var exampleFiles = [
         '../documentation/full-nexrad.json',
@@ -57,14 +66,14 @@ function loadExamples() {
             var fileContent = fs.readFileSync(filePath, 'utf-8');
             var rawMessages = JSON.parse(fileContent);
             var uat7Reports = rawMessages["last_msg"]["7"];
-            for (var _a = 0, uat7Reports_1 = uat7Reports; _a < uat7Reports_1.length; _a++) {
-                var reportPackage = uat7Reports_1[_a];
+            for (var _b = 0, uat7Reports_1 = uat7Reports; _b < uat7Reports_1.length; _b++) {
+                var reportPackage = uat7Reports_1[_b];
                 var reportText = reportPackage["report"];
-                var byteStrings = ("126," + reportText + ",126").split(',');
-                var packageAscci = byteStrings.map(function (byteString) { return parseInt(byteString); });
+                var deframedBytes = new Uint8Array(reportText.split(',').map(function (byteString) { return parseInt(byteString); }));
+                var packageAscci = __spreadArrays([0x7E], Array.from(data_handling_1.escapeData(deframedBytes)), [0x7E]);
                 var rawMessage = String.fromCharCode.apply(String, packageAscci);
                 var gdl90Message = new gdl90_message_1.Gdl90Message(rawMessage);
-                console.log(gdl90Message.decodedMessage);
+                console.log((_a = gdl90Message.decodedMessage) !== null && _a !== void 0 ? _a : "<NULL>");
             }
         }
         catch (err) {

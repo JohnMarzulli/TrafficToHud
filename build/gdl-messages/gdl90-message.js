@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gdl90Message = void 0;
 var data_handling_1 = require("../data-handling");
+var disk_logger_1 = require("../disk-logger");
 var basic_report_1 = require("./basic-report");
 var gdl90_heartbeat_1 = require("./gdl90-heartbeat");
 var long_report_1 = require("./long-report");
@@ -13,12 +14,18 @@ var stratux_heartbeat_1 = require("./stratux-heartbeat");
 var stratux_status_1 = require("./stratux-status");
 var traffic_1 = require("./traffic");
 var uplink_1 = require("./uplink");
+var gdl90MessageLogger = new disk_logger_1.DiskLogger("Gdl90Messages");
 var Gdl90Message = /** @class */ (function () {
     function Gdl90Message(raw_message) {
         this.receivedAt = Date.now();
         this.rawMessage = raw_message.trim();
         this.message = data_handling_1.unescapeData(data_handling_1.getBytes(this.rawMessage));
         this.messageType = Number(this.message[1].toString());
+        if (!data_handling_1.isCrcValid(this.message)) {
+            gdl90MessageLogger.error("CRC mismatch for messageType=" + this.messageType + ". Message dropped as corrupt.");
+            this.decodedMessage = null;
+            return;
+        }
         this.decodedMessage = getDecodedMessage(this);
     }
     return Gdl90Message;

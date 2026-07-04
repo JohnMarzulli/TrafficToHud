@@ -4,6 +4,6 @@ export declare class Gdl90Message {
     readonly messageType: number;
     readonly rawMessage: string;
     readonly message: Uint8Array;
-    readonly decodedMessage: DecodedGdl90Message;
+    readonly decodedMessage: DecodedGdl90Message | null;
     constructor(raw_message: string);
 }
