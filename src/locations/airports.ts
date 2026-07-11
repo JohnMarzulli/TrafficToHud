@@ -15,14 +15,20 @@ export function getAirports(
     req: Request
 ): any {
     try {
-        const host: string = `http://${req.headers['host']}`;
+        let requestHost: string = 'localhost';
+
+        if (req && req.headers && req.headers.get('host')) {
+            requestHost = req.headers.get('host') as string;
+        }
+
+        const host: string = `http://${requestHost}`;
         const fullUrl = new URL(req.url, host);
         const queryParams = new URLSearchParams(fullUrl.search);
 
         // Get the value of the specified parameter
-        const lat: number = parseFloat(queryParams.get("lat"));
-        const lon: number = parseFloat(queryParams.get("lon"));
-        const distance: number = parseFloat(queryParams.get("dist"));
+        const lat: number = parseFloat(queryParams.get("lat") ?? "0");
+        const lon: number = parseFloat(queryParams.get("lon") ?? "0");
+        const distance: number = parseFloat(queryParams.get("dist") ?? "0");
         const location: Coordinate = new Coordinate(lon, lat);
 
         return getAirportsWithinDistance(location, distance);
