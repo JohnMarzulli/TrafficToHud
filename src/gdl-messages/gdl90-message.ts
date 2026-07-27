@@ -3,7 +3,6 @@ import { DiskLogger } from "../disk-logger";
 import { BasicReport } from "./basic-report";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Heartbeat } from "./gdl90-heartbeat";
-import { HeartbeatMessage } from "./heartbeat-message";
 import { LongReport } from "./long-report";
 import { Ownship } from "./ownship";
 import { OwnshipAhrs } from "./ownship-ahrs";
@@ -56,8 +55,7 @@ function getDecodedMessage(
         30: BasicReport,
         31: LongReport,
         7: Uplink,
-        83: StratuxStatus,
-        253: HeartbeatMessage // Goes to a bit bucket
+        83: StratuxStatus
     };
 
     if (message.messageType == 101) {
