@@ -28,6 +28,19 @@ These installation steps are intended for developers or those who wish to instal
 npm install
 ```
 
+### Service Installation
+
+These instructions allow you to set TrafficToHud to start at boot on your StratuxHud Raspberry Pi that is running Trixie or newer.
+
+1. Open a termina on the Raspberry Pi, or SSH to it
+1. Make sure you have the latest code cloned into `/home/pi/TrafficToHud`
+1. Move to the TrafficToHud folder (`cd /home/pi/TrafficToHud`)
+1. Install the unit file by executing `sudo cp TrafficToHud.service /etc/systemd/system/TrafficToHud.service`
+1. Reload systemd, enable on boot, start now
+    1. `sudo systemctl daemon-reload`
+    1. `sudo systemctl enable --now TrafficToHud.service`
+1. After a reboot you may validate the service is running with: `sudo systemctl status TrafficToHud.service` and `journalctl -u TrafficToHud.service -f`
+
 ### Issues With Node
 
 On Bookworm, 18 appears to be the most recent version.
@@ -47,7 +60,6 @@ Madge is used to find and prevent circular dependancies. (<https://github.com/pa
 madge  --orphans .\traffic-manager.ts;
 madge  --circular .\traffic-manager.ts;
 ```
-
 
 ### Revision History
 
