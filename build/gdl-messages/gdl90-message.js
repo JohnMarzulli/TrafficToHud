@@ -5,6 +5,7 @@ var data_handling_1 = require("../data-handling");
 var disk_logger_1 = require("../disk-logger");
 var basic_report_1 = require("./basic-report");
 var gdl90_heartbeat_1 = require("./gdl90-heartbeat");
+var heartbeat_message_1 = require("./heartbeat-message");
 var long_report_1 = require("./long-report");
 var ownship_1 = require("./ownship");
 var ownship_ahrs_1 = require("./ownship-ahrs");
@@ -41,7 +42,8 @@ function getDecodedMessage(message) {
         30: basic_report_1.BasicReport,
         31: long_report_1.LongReport,
         7: uplink_1.Uplink,
-        83: stratux_status_1.StratuxStatus
+        83: stratux_status_1.StratuxStatus,
+        253: heartbeat_message_1.HeartbeatMessage // Goes to a bit bucket
     };
     if (message.messageType == 101) {
         var subType = message.message[2];
