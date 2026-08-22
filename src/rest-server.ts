@@ -53,7 +53,7 @@ class RestServer {
     return {
       server: {
         name: "StratuxHud",
-        version: "1.7.1"
+        version: "2.3.0"
       }
     };
   }
