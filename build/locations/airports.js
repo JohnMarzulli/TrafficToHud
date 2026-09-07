@@ -12,23 +12,19 @@ var coordinate_1 = require("../types/coordinate");
  * @returns A list of any airports within the given radius of the given location.
  */
 function getAirports(req) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     try {
-        var requestHost = 'localhost';
-        if (req && req.headers && req.headers.get('host')) {
-            requestHost = req.headers.get('host');
-        }
-        var host = "http://" + requestHost;
-        var fullUrl = new URL(req.url, host);
-        var queryParams = new URLSearchParams(fullUrl.search);
+        var queryString = (_a = req.originalUrl.split("?")[1]) !== null && _a !== void 0 ? _a : "";
+        var queryParams = new URLSearchParams(queryString);
         // Get the value of the specified parameter
-        var lat = parseFloat((_a = queryParams.get("lat")) !== null && _a !== void 0 ? _a : "0");
-        var lon = parseFloat((_b = queryParams.get("lon")) !== null && _b !== void 0 ? _b : "0");
-        var distance = parseFloat((_c = queryParams.get("dist")) !== null && _c !== void 0 ? _c : "0");
+        var lat = parseFloat((_b = queryParams.get("lat")) !== null && _b !== void 0 ? _b : "0");
+        var lon = parseFloat((_c = queryParams.get("lon")) !== null && _c !== void 0 ? _c : "0");
+        var distance = parseFloat((_d = queryParams.get("dist")) !== null && _d !== void 0 ? _d : "0");
         var location_1 = new coordinate_1.Coordinate(lon, lat);
         return getAirportsWithinDistance(location_1, distance);
     }
-    catch (_d) {
+    catch (error) {
+        console.error("Error in getAirports:", error);
         return [];
     }
 }

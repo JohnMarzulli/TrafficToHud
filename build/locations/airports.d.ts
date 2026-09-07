@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { Airport } from '../types/airport';
 import { Coordinate } from "../types/coordinate";
 /**
