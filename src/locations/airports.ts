@@ -1,5 +1,6 @@
 "use strict";
 
+import { Request } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getDistance } from '../geography/distance';
@@ -15,15 +16,8 @@ export function getAirports(
     req: Request
 ): any {
     try {
-        let requestHost: string = 'localhost';
-
-        if (req && req.headers && req.headers.get('host')) {
-            requestHost = req.headers.get('host') as string;
-        }
-
-        const host: string = `http://${requestHost}`;
-        const fullUrl = new URL(req.url, host);
-        const queryParams = new URLSearchParams(fullUrl.search);
+        const queryString: string = req.originalUrl.split("?")[1] ?? "";
+        const queryParams: URLSearchParams = new URLSearchParams(queryString);
 
         // Get the value of the specified parameter
         const lat: number = parseFloat(queryParams.get("lat") ?? "0");
@@ -33,7 +27,9 @@ export function getAirports(
 
         return getAirportsWithinDistance(location, distance);
     }
-    catch {
+    catch (error) {
+        console.error("Error in getAirports:", error);
+
         return [];
     }
 }
