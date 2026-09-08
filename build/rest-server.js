@@ -29,6 +29,7 @@ var RestServer = /** @class */ (function () {
         this.middleware();
         this.routes();
         airports_1.loadAirports();
+        airports_1.loadFrequencies();
     }
     // Making the sockets static and then having static handlers is
     // a horrific side effect of TS/JS and the object model it uses.
@@ -107,8 +108,9 @@ var RestServer = /** @class */ (function () {
             "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
             "/Weather/TextReports": text_reports_1.TextReports.getReports,
             "/Weather/FlightRules": text_reports_1.TextReports.getKnownFlightRules,
-            "/airports/Airports": airports_1.getAirports,
             "/airports/Status": airports_1.getAirportDataStatus,
+            "/airports/Airports": airports_1.getAirports,
+            "/airports/Frequencies": airports_1.getFrequencies
         };
         Object.keys(mapping).forEach(function (key) {
             router.get(key, function (req, res, next) {

@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAirportsWithinDistance = exports.loadAirports = exports.getAirportDataStatus = exports.getAirports = void 0;
+exports.getAirportsFrequenciesWithinDistance = exports.getAirportsWithinDistance = exports.loadFrequencies = exports.loadAirports = exports.getAirportDataStatus = exports.getFrequencies = exports.getAirports = void 0;
 var fs = require("fs");
 var path = require("path");
 var distance_1 = require("../geography/distance");
 var airport_1 = require("../types/airport");
+var airportFrequencies_1 = require("../types/airportFrequencies");
 var coordinate_1 = require("../types/coordinate");
 /**
  * Get a list of any nearby airports
@@ -12,15 +13,10 @@ var coordinate_1 = require("../types/coordinate");
  * @returns A list of any airports within the given radius of the given location.
  */
 function getAirports(req) {
-    var _a, _b, _c, _d;
     try {
-        var queryString = (_a = req.originalUrl.split("?")[1]) !== null && _a !== void 0 ? _a : "";
-        var queryParams = new URLSearchParams(queryString);
         // Get the value of the specified parameter
-        var lat = parseFloat((_b = queryParams.get("lat")) !== null && _b !== void 0 ? _b : "0");
-        var lon = parseFloat((_c = queryParams.get("lon")) !== null && _c !== void 0 ? _c : "0");
-        var distance = parseFloat((_d = queryParams.get("dist")) !== null && _d !== void 0 ? _d : "0");
-        var location_1 = new coordinate_1.Coordinate(lon, lat);
+        var distance = getDistanceFromRequest(req);
+        var location_1 = getLatLonFromRequest(req);
         return getAirportsWithinDistance(location_1, distance);
     }
     catch (error) {
@@ -29,6 +25,22 @@ function getAirports(req) {
     }
 }
 exports.getAirports = getAirports;
+/**
+ * Find any frequencies within the given radius (STATUTE MILES) of the given location
+ * @param req
+ * @returns A dictionary with the facility identifier as the key. This indexes to a list of the facility's frequencies.
+ */
+function getFrequencies(req) {
+    try {
+        var distance = getDistanceFromRequest(req);
+        var location_2 = getLatLonFromRequest(req);
+        return getAirportsFrequenciesWithinDistance(location_2, distance);
+    }
+    catch (_a) {
+        return {};
+    }
+}
+exports.getFrequencies = getFrequencies;
 /**
  * Returns the expiration dates of the loaded data.
  * @param req the incoming REST request (ignored)
@@ -74,6 +86,32 @@ function loadAirports() {
 }
 exports.loadAirports = loadAirports;
 /**
+ * Load the frequencies data from the FAA CSV file.
+ */
+function loadFrequencies() {
+    if (airportFrequencies.size > 0) {
+        return;
+    }
+    var lines = getCsvDataFileLines('FRQ.csv');
+    for (var _i = 0, lines_2 = lines; _i < lines_2.length; _i++) {
+        var line = lines_2[_i];
+        var trimmedLine = line.trim();
+        if (trimmedLine.length < 10) {
+            continue;
+        }
+        var tokens = trimmedLine.split(',');
+        if (tokens.length < 10) {
+            continue;
+        }
+        var frequencyInfo = new airportFrequencies_1.AirportFrequencies(tokens);
+        if (!airportFrequencies.has(frequencyInfo.facilityId)) {
+            airportFrequencies.set(frequencyInfo.facilityId, []);
+        }
+        airportFrequencies.get(frequencyInfo.facilityId).push(frequencyInfo);
+    }
+}
+exports.loadFrequencies = loadFrequencies;
+/**
  * Get any airports that are within a given distance (STATUTE MILES)
  * @param location The location to find airports within a radius of
  * @param distance The maximum radius in STATUTE MILES
@@ -89,6 +127,45 @@ function getAirportsWithinDistance(location, distance) {
     return foundAirports;
 }
 exports.getAirportsWithinDistance = getAirportsWithinDistance;
+/**
+ * Find a list of frequencies with in the given radius from the given location.
+ * @param location The location to use as our center point of search.
+ * @param distance The RADIUS to search, given in STATUTE MILES.
+ * @returns A dictionary with the facility identifier as the key. This indexes to a list of the facility's frequencies.
+ */
+function getAirportsFrequenciesWithinDistance(location, distance) {
+    var foundAirportFrequencies = {};
+    airportFrequencies.forEach(function (frequencies, ident) {
+        var foundDistance = distance_1.getDistance(location, frequencies[0].coordinates);
+        if (foundDistance <= distance) {
+            var voiceFreqs = getValidFrequencies(frequencies);
+            if (voiceFreqs.length > 0) {
+                foundAirportFrequencies[ident] = voiceFreqs;
+            }
+        }
+    });
+    return foundAirportFrequencies;
+}
+exports.getAirportsFrequenciesWithinDistance = getAirportsFrequenciesWithinDistance;
+function getValidFrequencies(allFreqs) {
+    var voiceFreqs = [];
+    for (var _i = 0, allFreqs_1 = allFreqs; _i < allFreqs_1.length; _i++) {
+        var freq = allFreqs_1[_i];
+        if (freq.facilityType === 'NAVAID') {
+            continue;
+        }
+        if (freq.coordinates.latitude === undefined || freq.coordinates.latitude === null || Number.isNaN(freq.coordinates.latitude)) {
+            continue;
+        }
+        voiceFreqs.push(freq);
+    }
+    return voiceFreqs;
+}
+function getCsvDataFileLines(fileShortName) {
+    var filePath = path.resolve(__dirname, "../../data/" + fileShortName);
+    var fileContent = fs.readFileSync(filePath, 'utf-8');
+    return fileContent.split('\n').slice(1);
+}
 function getExpirations() {
     var expirationsPath = path.resolve(__dirname, '../../data/expirations.json');
     var expirationsContent = fs.readFileSync(expirationsPath, 'utf-8');
@@ -98,7 +175,26 @@ function getExpirations() {
         expiration: expirations[airportsKey] ? expirations[airportsKey] : new Date().toISOString()
     };
 }
+function getLatLonFromRequest(req) {
+    var _a, _b, _c;
+    var queryString = (_a = req.originalUrl.split("?")[1]) !== null && _a !== void 0 ? _a : "";
+    var queryParams = new URLSearchParams(queryString);
+    // Get the value of the specified parameter
+    var lat = parseFloat((_b = queryParams.get("lat")) !== null && _b !== void 0 ? _b : "0");
+    var lon = parseFloat((_c = queryParams.get("lon")) !== null && _c !== void 0 ? _c : "0");
+    var location = new coordinate_1.Coordinate(lon, lat);
+    return location;
+}
+function getDistanceFromRequest(req) {
+    var _a, _b;
+    var queryString = (_a = req.originalUrl.split("?")[1]) !== null && _a !== void 0 ? _a : "";
+    var queryParams = new URLSearchParams(queryString);
+    // Get the value of the specified parameter
+    var distance = parseFloat((_b = queryParams.get("dist")) !== null && _b !== void 0 ? _b : "0");
+    return distance;
+}
 var airports = [];
 var airportsByIdent = new Map();
+var airportFrequencies = new Map();
 var expirations = getExpirations();
 //# sourceMappingURL=airports.js.map
