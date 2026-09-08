@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Gdl90Message } from '../gdl-messages/gdl90-message'; // Assuming Gdl90Message is in this file
-import { decodePayloadFromSample } from '../gdl-messages/uplink'; // Assuming decodePayloadFromSample is in this file
+import { decodePayloadFromSample, UatUplinkFrame } from '../gdl-messages/uplink'; // Assuming decodePayloadFromSample is in this file
 import { TextReport } from '../weather/text-report';
 import { TextReports } from '../weather/text-reports';
 
@@ -24,14 +24,17 @@ export function loadExamples(): void {
         '../../documentation/full-notams.json'
     ];
 
+    const logFiles: string[] = [
+        '../../documentation/Uplink_2026-08-22T02_41_13_208Z.playback'
+    ];
+
     for (const exampleFile of exampleFiles) {
 
         const filePath = path.resolve(__dirname, exampleFile);
 
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
-            const rawMessages: string[] = JSON.parse(fileContent);
-
+            const rawMessages: any = JSON.parse(fileContent);
             const uat7Reports = rawMessages["last_msg"]["7"];
 
             for (const reportPackage of uat7Reports) {
@@ -47,6 +50,24 @@ export function loadExamples(): void {
         }
     }
 
+    /*
+    [2026-08-22T03:48:36.903Z] - INFO  - FRAME: product=413, name=Generic Textual Data Product APDU Payload Format Type 2, opt=0, aFlag=false, gFlag=false, pFlag=false, sFlag=false, hours=23, minutes=53, padding=0
+    [2026-08-22T03:48:36.904Z] - INFO  - RAW  : 06 74 5f 50 34 55 01 4a 02 c8 3d 58 30 d7 2c f5 cd a8 31 cf 0c 38 2d 48 31 c1 33 60 18 55 f0 d7 08 02 2c ec 70 c2 00 8b 3b 2d 70 83 3c 6f cb 48 01 cb 9e 37 81 23 4b 80 13 f2 82 07 9c 15 33 10 c7 2c 20 53 0c f0 db 0c b4 d2 0c 70 cf 2e 20 cb 0c b9 d2 0d 73 c3 0c a0 93 d7 9d
+    [2026-08-22T03:48:36.904Z] - INFO  - Decoded generic text report: METAR KHOU 052353Z 13008KT 10SM FEW050 BKN100 BKN250 31/24 A2987 RMK AO2  
+        SLP120 T03060244 10328 20294 53002 $=
+    */
+
+    for (const logFile of logFiles) {
+        const filePath = path.resolve(__dirname, logFile);
+        const fileContent: Buffer = fs.readFileSync(filePath);
+        const allLines: string[] = fileContent.toString().split('\n');
+        const rawMessageLines: string[] = allLines.map(line => line.trim()).filter(line => line.includes('INFO  - RAW  :'));
+        const rawMessages: string[] = rawMessageLines.map(line => line.split('INFO  - RAW  :')[1].trim());
+        const rawMessageBytes: Uint8Array[] = rawMessages.map(getBytesFromLogLine);
+
+        rawMessageBytes.map(getUplinkFrameFromLogBytes);
+    }
+
     const tafs: TextReport[] = [
         new TextReport("TAF KPAE 212320Z 2200/2224 11009G16KT P6SM -RA SCT020 BKN050\nFM220100 13012KT 6SM -RA BR OVC020\nFM220600 16014G21KT 6SM -RA BR OVC022\nFM221200 15012G18KT P6SM VCSH OVC015\nFM222100 15017G28KT 6SM -RA BR OVC025"),
         new TextReport("TAF KBFI 190540Z 1906/2006 17004KT P6SM BKN045 OVC090\nFM191100 13003KT P6SM OVC060\nFM191800 14004KT P6SM -RA OVC050\nFM192200 13010G20KT P6SM -RA OVC040\nFM200300 15012G25KT P6SM -RA OVC030"),
@@ -55,4 +76,33 @@ export function loadExamples(): void {
     for (const taf of tafs) {
         TextReports.addReport(taf);
     }
+}
+
+function getBytesFromLogLine(
+    line: string
+): Uint8Array {
+    const parts = line.trim().split(/\s+/);
+    const bytes = parts.map(p => parseInt(p, 16));
+
+    return new Uint8Array(bytes);
+}
+
+/**
+ * Rebuilds the FIS-B APDU frame a "RAW  :" log line records back into a
+ * decoded UatUplinkFrame.
+ *
+ * NOTE: the "RAW  :" lines logged by uplink.ts (see logFrame/UatUplinkFrame)
+ * are NOT full top-level GDL90 messages. They're the individual product
+ * frames already sliced out of a Gdl90Message's payload *after* that
+ * message's own CRC-16 was validated (see Uplink's constructor and
+ * getUplinkFrames in uplink.ts). That means this data has no leading 0x7E
+ * flag byte, no message-type byte, and no trailing CRC-16 of its own - so
+ * it can never be round-tripped through `new Gdl90Message()`/isCrcValid.
+ * It has to be fed to UatUplinkFrame directly, the same way the real
+ * pipeline produces it.
+ */
+function getUplinkFrameFromLogBytes(
+    bytes: Uint8Array
+): UatUplinkFrame {
+    return new UatUplinkFrame(0, 0, bytes);
 }
