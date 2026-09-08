@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { Airport } from '../types/airport';
 import { AirportFrequencies } from '../types/airportFrequencies';
 import { Coordinate } from "../types/coordinate";
@@ -13,6 +14,12 @@ export declare function getAirports(req: Request): any;
  * @returns A dictionary with the facility identifier as the key. This indexes to a list of the facility's frequencies.
  */
 export declare function getFrequencies(req: Request): any;
+/**
+ * Returns the expiration dates of the loaded data.
+ * @param req the incoming REST request (ignored)
+ * @returns The set of expiration dates for the loaded airport data.
+ */
+export declare function getAirportDataStatus(req: Request): any;
 /**
  * Loads the list of airports from the FAA data.
  */

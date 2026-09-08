@@ -45,7 +45,7 @@ export class TextReports {
     }
 
     public static getKnownFlightRules(
-        req: Request
+        req: Request | null
     ): { [key in string]: FlightRules } {
         const secondsSinceLastGc = (Date.now() - TextReports.lastGcTime) / 1000;
 

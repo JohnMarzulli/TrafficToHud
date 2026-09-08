@@ -31,7 +31,7 @@ var SocketClient = /** @class */ (function (_super) {
     __extends(SocketClient, _super);
     function SocketClient(socketName, route, logLevel) {
         if (logLevel === void 0) { logLevel = logging_object_1.LogLevel.error; }
-        var _this = _super.call(this, logLevel) || this;
+        var _this = _super.call(this, "traffic_to_hud.socket", logLevel) || this;
         _this.StratuxAddress = "192.168.10.1";
         _this.checkInterval = 10000; // 10 seconds
         _this.responsePackage = {};

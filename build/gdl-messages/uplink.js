@@ -23,6 +23,8 @@ var text_report_1 = require("../weather/text-report");
 var text_reports_1 = require("../weather/text-reports");
 var airmet_1 = require("./airmet");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
+var disk_logger_1 = require("../disk-logger");
+var uplinkLogger = new disk_logger_1.DiskLogger("Uplink");
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
 // https://phd-sid.ethz.ch/debian/stratux/stratux-1.5b2/notes/SBS-Description-Doc_SRT_47_rev01_20111024.pdf
@@ -113,24 +115,118 @@ var UatUplinkFrame = /** @class */ (function () {
         this.frameType = frameType;
         this.frame = frame;
         if (frame.length < 4) {
-            console.error("Frame is too short to be valid!");
+            uplinkLogger.error("Frame is too short to be valid!");
             return;
         }
+        var isMonthDayValid = false;
+        var isSecondsValid = false;
+        var month = 0;
+        var day = 0;
+        var seconds = 0;
+        var length = 0;
+        var data;
+        var aFlag = (frame[0] & 0x80) != 0;
+        var gFlag = (frame[0] & 0x40) != 0;
+        var pFlag = (frame[0] & 0x20) != 0;
         var productId = ((frame[0] & 0x1f) << 6) | (frame[1] >> 2);
         var isSouthernHemisphere = (frame[1] & 0x02) != 0;
+        var opt = ((this.frame[1] & 0x01) << 1) | ((this.frame[2] >> 7));
+        var hours = (frame[2] & 0x7c) >> 2;
+        var minutes = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
         var padding = frame[3] & 15;
         logFrame(frame, productId);
+        uplinkLogger.log("--START--");
+        uplinkLogger.log("FRAME: product=" + productId + ", name=" + getFisbProductName(productId) + ", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
+        uplinkLogger.log("RAW  : " + Array.from(frame).map(function (b) { return b.toString(16).padStart(2, '0'); }).join(' '));
         // NEXRAD
-        if (isNexradProduct(productId, padding)) {
+        // isNexradProduct(productId, padding)
+        if (productId == 63) {
+            if (padding != 0) {
+                uplinkLogger.error("Padding is not zero. Probable decoding error. padding=" + padding);
+            }
             this.decodeNexradRegional(frame, isSouthernHemisphere);
         }
-        else if (isAirmetProduct(productId)) {
-            var report = airmet_1.decodeAirmet(frame.subarray(5));
-            text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
+        // NOTAM is 8
+        // AIRMET is 11
+        // SIGMET is 12
+        // else if (isAirmetProduct(productId)) {
+        else if (productId == 8
+            || productId == 11
+            || productId == 12) {
+            isMonthDayValid = true;
+            isSecondsValid = false;
+            month = (frame[2] & 0x78) >> 3;
+            day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+            hours = (frame[3] & 0x3e) >> 1;
+            minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+            length = frame.length - 5; // ???
+            data = frame.subarray(5);
+            var report = airmet_1.decodeAirmet(data);
+            if (report !== null) {
+                text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
+            }
         }
         else if (isMetarOrTafProduct(productId)) {
             var report = airmet_1.decodeGenericText(frame.subarray(4));
+            uplinkLogger.log("Decoded generic text report: " + report);
             text_reports_1.TextReports.addReport(new text_report_1.TextReport(report));
+        }
+        else if (productId == 84 || productId == 90 || productId == 1798) { // Probably some graphical product
+        }
+        else if (productId == 1037) { // some sort of mixed text and graphical product 
+        }
+        else {
+            /*
+            for (let offset = 0; ++offset; offset < length) {
+                decodeGenericText(frame.subarray(offset));
+            }
+            */
+            uplinkLogger.error("Unable to decode productId=" + productId);
+        }
+        switch (opt) {
+            case 0: // Hours, Minutes
+                isMonthDayValid = false;
+                isSecondsValid = false;
+                length = frame.length - 4;
+                data = frame.subarray(4);
+                break;
+            case 1: // Hours, Minutes, Seconds
+                if (frame.length < 5) {
+                    break;
+                }
+                isMonthDayValid = false;
+                isSecondsValid = true;
+                seconds = ((frame[3] & 0x0f) << 2) | (frame[4] >> 6);
+                length = frame.length - 5;
+                data = frame.subarray(5);
+                break;
+            case 2: // Month, Day, Hours, Minutes
+                if (frame.length < 5) {
+                    break;
+                }
+                isMonthDayValid = true;
+                isSecondsValid = false;
+                month = (frame[2] & 0x78) >> 3;
+                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+                hours = (frame[3] & 0x3e) >> 1;
+                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+                length = frame.length - 5; // ???
+                data = frame.subarray(5);
+                break;
+            case 3: // Month, Day, Hours, Minutes, Seconds
+                if (frame.length < 6) {
+                    break;
+                }
+                isMonthDayValid = true;
+                isSecondsValid = true;
+                month = (frame[2] & 0x78) >> 3;
+                day = ((frame[2] & 0x07) << 2) | (frame[3] >> 6);
+                hours = (frame[3] & 0x3e) >> 1;
+                minutes = ((frame[3] & 0x01) << 5) | (frame[4] >> 3);
+                seconds = ((frame[4] & 0x03) << 3) | (frame[5] >> 5);
+                length = frame.length - 6;
+                data = frame.subarray(6);
+                break;
         }
     }
     UatUplinkFrame.prototype.decodeNexradRegional = function (frame, isSouthernHemisphere) {
@@ -206,10 +302,10 @@ function getReservedAndFrameType(payload) {
     // Per spec, any value from 0b0001 to 0b1110 (inclusive) is reserved for future use
     var frameType = payload[1] & 15;
     if (reserved != 0) {
-        console.error("Reserved field is not zero: " + reserved);
+        uplinkLogger.error("Reserved field is not zero: " + reserved);
     }
     if (frameType != 0) {
-        console.error("Frame type is not zero: " + frameType);
+        uplinkLogger.error("Frame type is not zero: " + frameType);
     }
     return [reserved, frameType];
 }
@@ -221,8 +317,7 @@ function getUplinkFrames(payload) {
         var remainingBytes = payload.length - 2;
         if (remainingBytes < 2 + frameLength) {
             if (frameLength > 0) {
-                console.error("Hit an overrun of the UAT application data while decoding Uplink message!");
-                //return [];
+                uplinkLogger.error("Hit an overrun of the UAT application data while decoding Uplink message!");
             }
             break;
         }
@@ -343,7 +438,7 @@ function decodePayloadFromSample() {
         var frameType = payload[2] & 1;
         var graphic = payload.subarray(2, frameLength + 2);
         if (graphic.length != frameLength) {
-            console.error("Frame length mismatch: " + graphic.length + " != " + frameLength);
+            uplinkLogger.error("Frame length mismatch: " + graphic.length + " != " + frameLength);
         }
         var frameData = payload.subarray(2, frameLength + 2);
         var decodedFrame = new UatUplinkFrame(0, frameType, frameData);

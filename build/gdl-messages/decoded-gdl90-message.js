@@ -19,7 +19,7 @@ var DecodedGdl90Message = /** @class */ (function (_super) {
     __extends(DecodedGdl90Message, _super);
     function DecodedGdl90Message(logLevel) {
         if (logLevel === void 0) { logLevel = logging_object_1.LogLevel.debug; }
-        return _super.call(this, logLevel) || this;
+        return _super.call(this, "traffic_to_hud.gdl90", logLevel) || this;
     }
     return DecodedGdl90Message;
 }(logging_object_1.LoggingObject));

@@ -12,7 +12,7 @@ function dlacDecode(data) {
     var tab = false;
     var ret = "";
     for (var i = 0; i < data.length; i++) {
-        var ch = void 0;
+        var ch = 0;
         switch (step) {
             case 0:
                 ch = data[i + 0] >> 2;
@@ -72,7 +72,7 @@ function decodeAirmet(data) {
         var recordLength = ((data[6]) << 8) | (data[7]);
         if ((data.length - recordLength) < 6) {
             console.error("FISB record not long enough: recordLength=" + recordLength + ", data.length=" + data.length);
-            return;
+            return null;
         }
         // Report identifier = report number + report year.
         /*

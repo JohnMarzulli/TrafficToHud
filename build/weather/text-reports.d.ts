@@ -17,7 +17,7 @@ export declare class TextReports {
     static getReports(req: Request): {
         [key in ReportType]: TextReport[];
     };
-    static getKnownFlightRules(req: Request): {
+    static getKnownFlightRules(req: Request | null): {
         [key in string]: FlightRules;
     };
     /**

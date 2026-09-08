@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAirportsFrequenciesWithinDistance = exports.getAirportsWithinDistance = exports.loadFrequencies = exports.loadAirports = exports.getFrequencies = exports.getAirports = void 0;
+exports.getAirportsFrequenciesWithinDistance = exports.getAirportsWithinDistance = exports.loadFrequencies = exports.loadAirports = exports.getAirportDataStatus = exports.getFrequencies = exports.getAirports = void 0;
 var fs = require("fs");
 var path = require("path");
 var distance_1 = require("../geography/distance");
@@ -14,11 +14,13 @@ var coordinate_1 = require("../types/coordinate");
  */
 function getAirports(req) {
     try {
+        // Get the value of the specified parameter
         var distance = getDistanceFromRequest(req);
         var location_1 = getLatLonFromRequest(req);
         return getAirportsWithinDistance(location_1, distance);
     }
-    catch (_a) {
+    catch (error) {
+        console.error("Error in getAirports:", error);
         return [];
     }
 }
@@ -39,6 +41,20 @@ function getFrequencies(req) {
     }
 }
 exports.getFrequencies = getFrequencies;
+/**
+ * Returns the expiration dates of the loaded data.
+ * @param req the incoming REST request (ignored)
+ * @returns The set of expiration dates for the loaded airport data.
+ */
+function getAirportDataStatus(req) {
+    try {
+        return expirations;
+    }
+    catch (_a) {
+        return [];
+    }
+}
+exports.getAirportDataStatus = getAirportDataStatus;
 /**
  * Loads the list of airports from the FAA data.
  */
@@ -74,7 +90,7 @@ function loadFrequencies() {
     if (airportFrequencies.size > 0) {
         return;
     }
-    var lines = getCsvDataFileLines('nasr/FRQ.csv');
+    var lines = getCsvDataFileLines('FRQ.csv');
     for (var _i = 0, lines_2 = lines; _i < lines_2.length; _i++) {
         var line = lines_2[_i];
         var trimmedLine = line.trim();
@@ -86,10 +102,10 @@ function loadFrequencies() {
             continue;
         }
         var frequencyInfo = new airportFrequencies_1.AirportFrequencies(tokens);
-        if (!(frequencyInfo.facilityId in airportFrequencies)) {
-            airportFrequencies[frequencyInfo.facilityId] = [];
+        if (!airportFrequencies.has(frequencyInfo.facilityId)) {
+            airportFrequencies.set(frequencyInfo.facilityId, []);
         }
-        airportFrequencies[frequencyInfo.facilityId].push(frequencyInfo);
+        airportFrequencies.get(frequencyInfo.facilityId).push(frequencyInfo);
     }
 }
 exports.loadFrequencies = loadFrequencies;
@@ -117,15 +133,15 @@ exports.getAirportsWithinDistance = getAirportsWithinDistance;
  */
 function getAirportsFrequenciesWithinDistance(location, distance) {
     var foundAirportFrequencies = {};
-    for (var ident in airportFrequencies) {
-        var foundDistance = distance_1.getDistance(location, airportFrequencies[ident][0].coordinates);
+    airportFrequencies.forEach(function (frequencies, ident) {
+        var foundDistance = distance_1.getDistance(location, frequencies[0].coordinates);
         if (foundDistance <= distance) {
-            var voiceFreqs = getValidFrequencies(airportFrequencies[ident]);
+            var voiceFreqs = getValidFrequencies(frequencies);
             if (voiceFreqs.length > 0) {
-                foundAirportFrequencies[ident] = airportFrequencies[ident];
+                foundAirportFrequencies[ident] = voiceFreqs;
             }
         }
-    }
+    });
     return foundAirportFrequencies;
 }
 exports.getAirportsFrequenciesWithinDistance = getAirportsFrequenciesWithinDistance;
@@ -148,22 +164,35 @@ function getCsvDataFileLines(fileShortName) {
     var fileContent = fs.readFileSync(filePath, 'utf-8');
     return fileContent.split('\n').slice(1);
 }
+function getExpirations() {
+    var expirationsPath = path.resolve(__dirname, '../../data/expirations.json');
+    var expirationsContent = fs.readFileSync(expirationsPath, 'utf-8');
+    var expirations = JSON.parse(expirationsContent);
+    var airportsKey = "Airports.csv";
+    return {
+        expiration: expirations[airportsKey] ? expirations[airportsKey] : new Date().toISOString()
+    };
+}
 function getLatLonFromRequest(req) {
-    var host = "http://" + req.headers['host'];
-    var fullUrl = new URL(req.url, host);
-    var queryParams = new URLSearchParams(fullUrl.search);
+    var _a, _b, _c;
+    var queryString = (_a = req.originalUrl.split("?")[1]) !== null && _a !== void 0 ? _a : "";
+    var queryParams = new URLSearchParams(queryString);
     // Get the value of the specified parameter
-    var lat = parseFloat(queryParams.get("lat"));
-    var lon = parseFloat(queryParams.get("lon"));
-    return new coordinate_1.Coordinate(lon, lat);
+    var lat = parseFloat((_b = queryParams.get("lat")) !== null && _b !== void 0 ? _b : "0");
+    var lon = parseFloat((_c = queryParams.get("lon")) !== null && _c !== void 0 ? _c : "0");
+    var location = new coordinate_1.Coordinate(lon, lat);
+    return location;
 }
 function getDistanceFromRequest(req) {
-    var host = "http://" + req.headers['host'];
-    var fullUrl = new URL(req.url, host);
-    var queryParams = new URLSearchParams(fullUrl.search);
-    return parseFloat(queryParams.get("dist"));
+    var _a, _b;
+    var queryString = (_a = req.originalUrl.split("?")[1]) !== null && _a !== void 0 ? _a : "";
+    var queryParams = new URLSearchParams(queryString);
+    // Get the value of the specified parameter
+    var distance = parseFloat((_b = queryParams.get("dist")) !== null && _b !== void 0 ? _b : "0");
+    return distance;
 }
 var airports = [];
-var airportFrequencies = new Map();
 var airportsByIdent = new Map();
+var airportFrequencies = new Map();
+var expirations = getExpirations();
 //# sourceMappingURL=airports.js.map
