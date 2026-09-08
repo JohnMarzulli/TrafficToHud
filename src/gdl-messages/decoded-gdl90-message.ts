@@ -4,6 +4,6 @@ export abstract class DecodedGdl90Message extends LoggingObject {
     public constructor(
         logLevel: LogLevel = LogLevel.debug
     ) {
-        super(logLevel);
+        super("traffic_to_hud.gdl90", logLevel);
     }
 }

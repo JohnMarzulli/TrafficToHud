@@ -1,7 +1,7 @@
 "use strict";
 
 import * as assert from 'assert';
-import { getBytes, getChecksum, unescapeData } from "../data-handling";
+import { crc16, getBytes, getChecksum, isCrcValid, unescapeData } from "../data-handling";
 
 function compareBytes(
     foundBytes: Uint8Array,
@@ -47,6 +47,30 @@ function testGetBytes(): void {
     console.log("PASSED: getBytes tests.");
 }
 
+function testCrc16(): void {
+    // Heartbeat message example from the GDL90 spec: msgId=0x00, data=81 41 DB D0 08 02, CRC=B3 8B.
+    const messageBody: Uint8Array = new Uint8Array([0x00, 0x81, 0x41, 0xDB, 0xD0, 0x08, 0x02]);
+
+    assert.strictEqual(crc16(messageBody), 0x8BB3);
+
+    console.log("PASSED: crc16 tests.");
+}
+
+function testIsCrcValid(): void {
+    const validMessage: Uint8Array = new Uint8Array([0x7E, 0x00, 0x81, 0x41, 0xDB, 0xD0, 0x08, 0x02, 0xB3, 0x8B, 0x7E]);
+
+    assert.strictEqual(isCrcValid(validMessage), true);
+
+    const corruptedMessage: Uint8Array = new Uint8Array(validMessage);
+    corruptedMessage[3] ^= 0xFF;
+
+    assert.strictEqual(isCrcValid(corruptedMessage), false);
+
+    console.log("PASSED: isCrcValid tests.");
+}
+
 testUnescapeData();
 testCalculateChecksum();
 testGetBytes();
+testCrc16();
+testIsCrcValid();

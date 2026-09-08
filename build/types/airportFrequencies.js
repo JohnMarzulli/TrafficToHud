@@ -29,6 +29,9 @@ var AirportFrequencies = /** @class */ (function () {
         this.remarks = this.cleanString(tokens[20]);
     }
     AirportFrequencies.prototype.cleanString = function (token) {
+        if (!token) {
+            return '';
+        }
         return token.replace(/['"]/g, '');
     };
     return AirportFrequencies;
