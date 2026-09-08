@@ -16,6 +16,23 @@ This service currently works with the following devices:
 
 - Stratux 1.5 and newer.
 
+## Data sources
+
+The repository includes utilities and references for downloading airport/runway and airspace data. Common sources used in development:
+
+- FAA ADDs / NASR datasets (airports, runways, frequencies)
+- FAA open data endpoints (see original links in this file for specifics)
+
+Most of the data can be found at <https://adds-faa.opendata.arcgis.com/search?collection=Dataset>
+
+| Data Type                                        | Data Location                                                                                                                   |
+|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| Airports CSV                                     | <https://adds-faa.opendata.arcgis.com/datasets/e747ab91a11045e8b3f8a3efd093d3b5_0/explore?location=4.003400%2C-1.633886%2C2.43> |
+| NASR (FRQ.csv)                                   | <https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/NASR_Subscription/>                                              |
+| Runways CSV                                      | <https://adds-faa.opendata.arcgis.com/datasets/4d8fa46181aa470d809776c57a8ab1f6_0/explore?location=5.724382%2C-1.628771%2C2.63> |
+| Frequencies JSON                                 | <https://adds-faa.opendata.arcgis.com/datasets/16966d553d454cca9706d2ce32b14d31_0/explore>                                      |
+| Airspace JSON                                    | <https://adds-faa.opendata.arcgis.com/datasets/c6a62360338e408cb1512366ad61559e_0/explore?location=7.543542%2C-5.669382%2C2.65> |
+
 ## Installation
 
 This service is included in the StratuxHud image.
