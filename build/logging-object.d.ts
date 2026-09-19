@@ -7,7 +7,8 @@ export declare enum LogLevel {
     none = 5
 }
 export declare abstract class LoggingObject {
-    constructor(baseFileName: string, logLevel?: LogLevel, maxFileSize?: number, backupCount?: number);
+    constructor(baseFileName: string, logLevel?: LogLevel, maxFileSize?: number, // 100MB
+    backupCount?: number);
     protected LogSpew(text: string): void;
     protected LogInfo(text: string): void;
     protected LogDebug(text: string): void;

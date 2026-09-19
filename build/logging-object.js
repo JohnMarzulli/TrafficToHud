@@ -14,9 +14,10 @@ var LogLevel;
 })(LogLevel = exports.LogLevel || (exports.LogLevel = {}));
 ;
 var LoggingObject = /** @class */ (function () {
-    function LoggingObject(baseFileName, logLevel, maxFileSize, backupCount) {
+    function LoggingObject(baseFileName, logLevel, maxFileSize, // 100MB
+    backupCount) {
         if (logLevel === void 0) { logLevel = LogLevel.debug; }
-        if (maxFileSize === void 0) { maxFileSize = 1048576; }
+        if (maxFileSize === void 0) { maxFileSize = 104857600; }
         if (backupCount === void 0) { backupCount = 10; }
         this.logLevel = logLevel;
         this.filePath = path.resolve(baseFileName + ".log");

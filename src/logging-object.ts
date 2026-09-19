@@ -14,7 +14,7 @@ export abstract class LoggingObject {
     public constructor(
         baseFileName: string,
         logLevel: LogLevel = LogLevel.debug,
-        maxFileSize: number = 1048576,
+        maxFileSize: number = 104857600, // 100MB
         backupCount: number = 10
     ) {
         this.logLevel = logLevel;
