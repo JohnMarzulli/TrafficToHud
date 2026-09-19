@@ -1,5 +1,6 @@
 "use strict";
 
+import { Request } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getDistance } from '../geography/distance';
@@ -16,12 +17,15 @@ export function getAirports(
     req: Request
 ): any {
     try {
+        // Get the value of the specified parameter
         const distance: number = getDistanceFromRequest(req);
         const location: Coordinate = getLatLonFromRequest(req);
 
         return getAirportsWithinDistance(location, distance);
     }
-    catch {
+    catch (error) {
+        console.error("Error in getAirports:", error);
+
         return [];
     }
 }
@@ -44,6 +48,23 @@ export function getFrequencies(
         return {};
     }
 }
+
+/**
+ * Returns the expiration dates of the loaded data.
+ * @param req the incoming REST request (ignored)
+ * @returns The set of expiration dates for the loaded airport data.
+ */
+export function getAirportDataStatus(
+    req: Request
+): any {
+    try {
+        return expirations;
+    }
+    catch {
+        return [];
+    }
+}
+
 /**
  * Loads the list of airports from the FAA data.
  */
@@ -93,7 +114,7 @@ export function loadFrequencies(): void {
         return;
     }
 
-    const lines: string[] = getCsvDataFileLines('nasr/FRQ.csv');
+    const lines: string[] = getCsvDataFileLines('FRQ.csv');
 
     for (const line of lines) {
         const trimmedLine = line.trim();
@@ -110,11 +131,11 @@ export function loadFrequencies(): void {
 
         const frequencyInfo = new AirportFrequencies(tokens);
 
-        if (!(frequencyInfo.facilityId in airportFrequencies)) {
-            airportFrequencies[frequencyInfo.facilityId] = [];
+        if (!airportFrequencies.has(frequencyInfo.facilityId)) {
+            airportFrequencies.set(frequencyInfo.facilityId, []);
         }
 
-        airportFrequencies[frequencyInfo.facilityId].push(frequencyInfo);
+        airportFrequencies.get(frequencyInfo.facilityId)!.push(frequencyInfo);
     }
 }
 
@@ -151,17 +172,17 @@ export function getAirportsFrequenciesWithinDistance(
 ): { [key: string]: AirportFrequencies[]; } {
     const foundAirportFrequencies: { [key: string]: AirportFrequencies[]; } = {};
 
-    for (const ident in airportFrequencies) {
-        const foundDistance = getDistance(location, airportFrequencies[ident][0].coordinates);
+    airportFrequencies.forEach((frequencies, ident) => {
+        const foundDistance = getDistance(location, frequencies[0].coordinates);
 
         if (foundDistance <= distance) {
-            const voiceFreqs: AirportFrequencies[] = getValidFrequencies(airportFrequencies[ident]);
+            const voiceFreqs: AirportFrequencies[] = getValidFrequencies(frequencies);
 
             if (voiceFreqs.length > 0) {
-                foundAirportFrequencies[ident] = airportFrequencies[ident];
+                foundAirportFrequencies[ident] = voiceFreqs;
             }
         }
-    }
+    });
 
     return foundAirportFrequencies;
 }
@@ -195,30 +216,44 @@ function getCsvDataFileLines(
     return fileContent.split('\n').slice(1);
 }
 
+function getExpirations(): any {
+    const expirationsPath = path.resolve(__dirname, '../../data/expirations.json');
+    const expirationsContent = fs.readFileSync(expirationsPath, 'utf-8');
+    const expirations = JSON.parse(expirationsContent);
+    const airportsKey: string = "Airports.csv";
+
+    return {
+        expiration: expirations[airportsKey] ? expirations[airportsKey] : new Date().toISOString()
+    };
+}
+
 function getLatLonFromRequest(
     req: Request
 ): Coordinate {
-    const host: string = `http://${req.headers['host']}`;
-    const fullUrl = new URL(req.url, host);
-    const queryParams = new URLSearchParams(fullUrl.search);
+    const queryString: string = req.originalUrl.split("?")[1] ?? "";
+    const queryParams: URLSearchParams = new URLSearchParams(queryString);
 
     // Get the value of the specified parameter
-    const lat: number = parseFloat(queryParams.get("lat"));
-    const lon: number = parseFloat(queryParams.get("lon"));
+    const lat: number = parseFloat(queryParams.get("lat") ?? "0");
+    const lon: number = parseFloat(queryParams.get("lon") ?? "0");
+    const location: Coordinate = new Coordinate(lon, lat);
 
-    return new Coordinate(lon, lat);
+    return location;
 }
 
 function getDistanceFromRequest(
     req: Request
 ): number {
-    const host: string = `http://${req.headers['host']}`;
-    const fullUrl = new URL(req.url, host);
-    const queryParams = new URLSearchParams(fullUrl.search);
+    const queryString: string = req.originalUrl.split("?")[1] ?? "";
+    const queryParams: URLSearchParams = new URLSearchParams(queryString);
 
-    return parseFloat(queryParams.get("dist"));
+    // Get the value of the specified parameter
+    const distance: number = parseFloat(queryParams.get("dist") ?? "0");
+
+    return distance;
 }
 
 const airports: Airport[] = [];
-const airportFrequencies: Map<string, AirportFrequencies[]> = new Map<string, AirportFrequencies[]>();
 const airportsByIdent: Map<string, Airport> = new Map<string, Airport>();
+const airportFrequencies: Map<string, AirportFrequencies[]> = new Map<string, AirportFrequencies[]>();
+const expirations = getExpirations();

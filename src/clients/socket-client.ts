@@ -20,7 +20,7 @@ export abstract class SocketClient extends LoggingObject {
         route: string,
         logLevel: LogLevel = LogLevel.error
     ) {
-        super(logLevel);
+        super("traffic_to_hud.socket", logLevel);
 
         this.socketName = socketName;
         this.route = route;

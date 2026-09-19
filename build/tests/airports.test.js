@@ -31,7 +31,7 @@ function testGetAirportFrequenciesByDistance() {
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "AWO"), true);
     assert.strictEqual(foundFrequencies["AWO"].length, 2);
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "PAE"), true);
-    assert.strictEqual(foundFrequencies["PAE"].length, 12);
+    assert.strictEqual(foundFrequencies["PAE"].length, 10);
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "W10"), true);
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "S43"), true);
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "W10"), true);

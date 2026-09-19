@@ -1,4 +1,5 @@
-import { getBytes, unescapeData } from "../data-handling";
+import { getBytes, isCrcValid, unescapeData } from "../data-handling";
+import { DiskLogger } from "../disk-logger";
 import { BasicReport } from "./basic-report";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Heartbeat } from "./gdl90-heartbeat";
@@ -11,6 +12,8 @@ import { StratuxHeartbeat } from "./stratux-heartbeat";
 import { StratuxStatus } from "./stratux-status";
 import { Traffic } from "./traffic";
 import { Uplink } from "./uplink";
+
+const gdl90MessageLogger: DiskLogger = new DiskLogger("Gdl90Messages");
 
 /**
  * A GDL90 message that has been received and decoded.
@@ -40,7 +43,7 @@ export class Gdl90Message {
     /**
      * The decoded message object. Could be any type of message.
      */
-    public readonly decodedMessage: DecodedGdl90Message;
+    public readonly decodedMessage: DecodedGdl90Message | null;
 
     constructor(
         rawMessage: string
@@ -49,13 +52,22 @@ export class Gdl90Message {
         this.rawMessage = rawMessage.trim();
         this.message = unescapeData(getBytes(this.rawMessage));
         this.messageType = Number(this.message[1].toString());
+
+        if (!isCrcValid(this.message)) {
+            gdl90MessageLogger.error(`CRC mismatch for messageType=${this.messageType}. Message dropped as corrupt.`);
+
+            this.decodedMessage = null;
+
+            return;
+        }
+
         this.decodedMessage = getDecodedMessage(this);
     }
 }
 
 function getDecodedMessage(
     message: Gdl90Message,
-): DecodedGdl90Message {
+): DecodedGdl90Message | null {
     const constructorMap: { [key: number]: new (message: Gdl90Message) => DecodedGdl90Message; } = {
         0: Gdl90Heartbeat,
         10: Ownship,

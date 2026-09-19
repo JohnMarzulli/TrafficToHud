@@ -92,6 +92,10 @@ export class AirportFrequencies {
     private cleanString(
         token: string
     ): string {
+        if (!token) {
+            return '';
+        }
+
         return token.replace(/['"]/g, '');
     }
 }

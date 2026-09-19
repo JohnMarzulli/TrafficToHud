@@ -13,7 +13,7 @@ export function dlacDecode(data: Uint8Array): string {
     let ret: string = "";
 
     for (let i: number = 0; i < data.length; i++) {
-        let ch: number;
+        let ch: number = 0;
 
         switch (step) {
             case 0:
@@ -85,7 +85,7 @@ export function decodeAirmet(
         if ((data.length - recordLength) < 6) {
             console.error(`FISB record not long enough: recordLength=${recordLength}, data.length=${data.length}`);
 
-            return;
+            return null;
         }
         // Report identifier = report number + report year.
         /*

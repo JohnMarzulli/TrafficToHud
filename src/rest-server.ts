@@ -8,7 +8,7 @@ import { Gdl90Client } from "./clients/gdl90-client";
 import { RadarClient } from "./clients/radar-client";
 import { StatusClient } from "./clients/status-client";
 import { TrafficClient } from "./clients/traffic-client";
-import { getAirports, getFrequencies, loadAirports, loadFrequencies } from "./locations/airports";
+import { getAirportDataStatus, getAirports, getFrequencies, loadAirports, loadFrequencies } from "./locations/airports";
 import { loadExamples } from "./tests/sample-data";
 import { ReflectivityRadar } from "./weather/nexrad";
 import { TextReports } from "./weather/text-reports";
@@ -54,7 +54,7 @@ class RestServer {
     return {
       server: {
         name: "StratuxHud",
-        version: "1.7.1"
+        version: "2.3.0"
       }
     };
   }
@@ -130,6 +130,7 @@ class RestServer {
       "/Weather/Reflectivity": ReflectivityRadar.getReflectivity,
       "/Weather/TextReports": TextReports.getReports,
       "/Weather/FlightRules": TextReports.getKnownFlightRules,
+      "/airports/Status": getAirportDataStatus,
       "/airports/Airports": getAirports,
       "/airports/Frequencies": getFrequencies
     };

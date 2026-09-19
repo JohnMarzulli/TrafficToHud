@@ -23,6 +23,6 @@ export declare class Gdl90Message {
     /**
      * The decoded message object. Could be any type of message.
      */
-    readonly decodedMessage: DecodedGdl90Message;
+    readonly decodedMessage: DecodedGdl90Message | null;
     constructor(rawMessage: string);
 }

@@ -1,0 +1,16 @@
+[Unit]
+Description=TrafficToHud traffic manager service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/TrafficToHud
+ExecStart=/usr/bin/node /home/pi/TrafficToHud/build/traffic-manager.js
+Restart=on-failure
+RestartSec=5
+Environment=PORT=8000
+
+[Install]
+WantedBy=multi-user.target

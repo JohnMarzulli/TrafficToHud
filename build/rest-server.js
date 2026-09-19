@@ -58,7 +58,7 @@ var RestServer = /** @class */ (function () {
         return {
             server: {
                 name: "StratuxHud",
-                version: "1.7.1"
+                version: "2.3.0"
             }
         };
     };
@@ -112,6 +112,7 @@ var RestServer = /** @class */ (function () {
             "/Weather/Reflectivity": nexrad_1.ReflectivityRadar.getReflectivity,
             "/Weather/TextReports": text_reports_1.TextReports.getReports,
             "/Weather/FlightRules": text_reports_1.TextReports.getKnownFlightRules,
+            "/airports/Status": airports_1.getAirportDataStatus,
             "/airports/Airports": airports_1.getAirports,
             "/airports/Frequencies": airports_1.getFrequencies
         };
