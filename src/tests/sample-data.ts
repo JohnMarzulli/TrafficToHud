@@ -25,7 +25,8 @@ export function loadExamples(): void {
     ];
 
     const logFiles: string[] = [
-        '../../documentation/Uplink_2026-08-22T02_41_13_208Z.playback'
+        '../../documentation/Uplink_2026-08-22T02_41_13_208Z.playback',
+        '../../documentation/2026-09-12_GDL-90.playback'
     ];
 
     for (const exampleFile of exampleFiles) {
