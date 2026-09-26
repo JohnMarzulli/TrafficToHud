@@ -15,6 +15,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.decodePayloadFromSample = exports.Uplink = exports.UatUplinkFrame = void 0;
 var console_1 = require("console");
+var disk_logger_1 = require("../disk-logger");
 var logging_object_1 = require("../logging-object");
 var boundaries_1 = require("../types/boundaries");
 var coordinate_1 = require("../types/coordinate");
@@ -23,8 +24,8 @@ var text_report_1 = require("../weather/text-report");
 var text_reports_1 = require("../weather/text-reports");
 var airmet_1 = require("./airmet");
 var decoded_gdl90_message_1 = require("./decoded-gdl90-message");
-var disk_logger_1 = require("../disk-logger");
 var uplinkLogger = new disk_logger_1.DiskLogger("Uplink");
+var decodedFrameLogger = new disk_logger_1.DiskLogger("Decoded");
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
 // https://phd-sid.ethz.ch/debian/stratux/stratux-1.5b2/notes/SBS-Description-Doc_SRT_47_rev01_20111024.pdf
@@ -425,10 +426,10 @@ function logFrame(frame, productId) {
     var hours = (frame[2] & 0x7c) >> 2;
     var minutes = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
     var padding = frame[3] & 15;
-    console.log("    FRAME: product=" + productId + ", name=\"" + getFisbProductName(productId) + "\", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
-    console.log("    ------ START ------");
-    console.log("" + frame);
-    console.log("    ------ END ------");
+    decodedFrameLogger.log("    FRAME: product=" + productId + ", name=\"" + getFisbProductName(productId) + "\", opt=" + opt + ", aFlag=" + aFlag + ", gFlag=" + gFlag + ", pFlag=" + pFlag + ", sFlag=" + isSouthernHemisphere + ", hours=" + hours + ", minutes=" + minutes + ", padding=" + padding);
+    decodedFrameLogger.log("    ------ START ------");
+    decodedFrameLogger.log("" + frame);
+    decodedFrameLogger.log("    ------ END ------");
 }
 function decodePayloadFromSample() {
     var payloads = [getPayloadFromSample(faaExampleNexradOregonFirstHalf), getPayloadFromSample(faaExampleNexradOregonSecondHalf)];

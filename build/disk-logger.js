@@ -33,12 +33,15 @@ var DiskLogger = /** @class */ (function () {
      * @param message The error message to be logged
      */
     DiskLogger.prototype.error = function (message) {
-        this.internalLog(message, 'ERROR');
+        this.internalLog(message, 'ERROR', true);
     };
-    DiskLogger.prototype.internalLog = function (message, level) {
+    DiskLogger.prototype.internalLog = function (message, level, isToConsole) {
+        if (isToConsole === void 0) { isToConsole = false; }
         var timestamp = new Date().toISOString();
         var stampedMessage = "[" + timestamp + "] - " + level.padEnd(5) + " - " + message;
-        console.log(stampedMessage);
+        if (isToConsole) {
+            console.log(stampedMessage);
+        }
         if (this.fileHandle) {
             this.fileHandle.write(stampedMessage + '\n');
         }

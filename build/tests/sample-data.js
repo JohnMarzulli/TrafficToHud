@@ -24,7 +24,9 @@ function loadExamples() {
     ];
     var logFiles = [
         '../../documentation/Uplink_2026-08-22T02_41_13_208Z.playback',
-        '../../documentation/2026-09-12_GDL-90.playback'
+        '../../documentation/2026-09-12_GDL-90.playback',
+        '../../documentation/Uplink_2026-09-12T18_39_08_186Z.playback',
+        '../../documentation/2026-09-21_GDL-90.playback'
     ];
     for (var _i = 0, exampleFiles_1 = exampleFiles; _i < exampleFiles_1.length; _i++) {
         var exampleFile = exampleFiles_1[_i];
