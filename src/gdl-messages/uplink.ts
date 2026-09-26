@@ -1,4 +1,5 @@
 import { assert } from "console";
+import { DiskLogger } from "../disk-logger";
 import { LogLevel } from "../logging-object";
 import { CoordinateBoundaries } from "../types/boundaries";
 import { Coordinate } from "../types/coordinate";
@@ -8,9 +9,9 @@ import { TextReports } from "../weather/text-reports";
 import { decodeAirmet, decodeGenericText } from "./airmet";
 import { DecodedGdl90Message } from "./decoded-gdl90-message";
 import { Gdl90Message } from "./gdl90-message";
-import { DiskLogger } from "../disk-logger";
 
 const uplinkLogger: DiskLogger = new DiskLogger("Uplink");
+const decodedFrameLogger: DiskLogger = new DiskLogger("Decoded");
 
 // References:
 // https://www.faa.gov/sites/faa.gov/files/air_traffic/technology/adsb/archival/GDL90_Public_ICD_RevA.PDF
@@ -502,10 +503,10 @@ function logFrame(
     let minutes: number = ((frame[2] & 0x03) << 4) | (frame[3] >> 4);
     const padding = frame[3] & 0b00001111;
 
-    console.log(`    FRAME: product=${productId}, name="${getFisbProductName(productId)}", opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
-    console.log(`    ------ START ------`);
-    console.log(`${frame}`);
-    console.log(`    ------ END ------`);
+    decodedFrameLogger.log(`    FRAME: product=${productId}, name="${getFisbProductName(productId)}", opt=${opt}, aFlag=${aFlag}, gFlag=${gFlag}, pFlag=${pFlag}, sFlag=${isSouthernHemisphere}, hours=${hours}, minutes=${minutes}, padding=${padding}`);
+    decodedFrameLogger.log(`    ------ START ------`);
+    decodedFrameLogger.log(`${frame}`);
+    decodedFrameLogger.log(`    ------ END ------`);
 }
 
 export function decodePayloadFromSample() {

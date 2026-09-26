@@ -38,17 +38,20 @@ export class DiskLogger {
     public error(
         message: string
     ): void {
-        this.internalLog(message, 'ERROR');
+        this.internalLog(message, 'ERROR', true);
     }
 
     private internalLog(
         message: string,
-        level: 'INFO' | 'ERROR'
+        level: 'INFO' | 'ERROR',
+        isToConsole: boolean = false
     ) {
         const timestamp = new Date().toISOString();
         const stampedMessage = `[${timestamp}] - ${level.padEnd(5)} - ${message}`;
 
-        console.log(stampedMessage);
+        if (isToConsole) {
+            console.log(stampedMessage);
+        }
 
         if (this.fileHandle) {
             this.fileHandle.write(stampedMessage + '\n');
