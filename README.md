@@ -38,6 +38,20 @@ src/
 
 If you prefer a PlantUML or Mermaid diagram added to the docs I can add that as `docs/architecture.puml`.
 
+## Raspberry Pi OS (Trixie) Setup
+
+It is useful to have `ssh` enabled using `raspi-config` and then to use a SSH connection so the commands may be pasted in.
+
+1. `sudo apt-get install nodejs`
+1. `sudo apt-get install npm`
+1. `cd ~`
+1. `git clone https://github.com/JohnMarzulli/TrafficToHud.git`
+1. `cd TrafficToHud`
+1. `sudo npm install -g typescript`
+1. `npm install`
+
+The remaining steps are covered in the section about Service Installation.
+
 ## Data sources
 
 The repository includes utilities and references for downloading airport/runway and airspace data. Common sources used in development:
@@ -47,13 +61,13 @@ The repository includes utilities and references for downloading airport/runway 
 
 Most of the data can be found at <https://adds-faa.opendata.arcgis.com/search?collection=Dataset>
 
-| Data Type                                        | Data Location                                                                                                                   |
-|--------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| Airports CSV                                     | <https://adds-faa.opendata.arcgis.com/datasets/e747ab91a11045e8b3f8a3efd093d3b5_0/explore?location=4.003400%2C-1.633886%2C2.43> |
-| NASR (FRQ.csv)                                   | <https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/NASR_Subscription/>                                              |
-| Runways CSV                                      | <https://adds-faa.opendata.arcgis.com/datasets/4d8fa46181aa470d809776c57a8ab1f6_0/explore?location=5.724382%2C-1.628771%2C2.63> |
-| Frequencies JSON                                 | <https://adds-faa.opendata.arcgis.com/datasets/16966d553d454cca9706d2ce32b14d31_0/explore>                                      |
-| Airspace JSON                                    | <https://adds-faa.opendata.arcgis.com/datasets/c6a62360338e408cb1512366ad61559e_0/explore?location=7.543542%2C-5.669382%2C2.65> |
+| Data Type        | Data Location                                                                                                                   |
+|------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| Airports CSV     | <https://adds-faa.opendata.arcgis.com/datasets/e747ab91a11045e8b3f8a3efd093d3b5_0/explore?location=4.003400%2C-1.633886%2C2.43> |
+| NASR (FRQ.csv)   | <https://www.faa.gov/air_traffic/flight_info/aeronav/aero_data/NASR_Subscription/>                                              |
+| Runways CSV      | <https://adds-faa.opendata.arcgis.com/datasets/4d8fa46181aa470d809776c57a8ab1f6_0/explore?location=5.724382%2C-1.628771%2C2.63> |
+| Frequencies JSON | <https://adds-faa.opendata.arcgis.com/datasets/16966d553d454cca9706d2ce32b14d31_0/explore>                                      |
+| Airspace JSON    | <https://adds-faa.opendata.arcgis.com/datasets/c6a62360338e408cb1512366ad61559e_0/explore?location=7.543542%2C-5.669382%2C2.65> |
 
 ## Installation
 
@@ -80,6 +94,7 @@ These instructions allow you to set TrafficToHud to start at boot on your Stratu
     1. `sudo systemctl daemon-reload`
     1. `sudo systemctl enable --now TrafficToHud.service`
 1. After a reboot you may validate the service is running with: `sudo systemctl status TrafficToHud.service` and `journalctl -u TrafficToHud.service -f`
+1. You may also check that the service is running with `curl http://localhost:8000`
 
 ### Issues With Node
 
@@ -143,7 +158,7 @@ madge --circular .\src\traffic-manager.ts
 Please note that the protocol is "HTTP", not "HTTPS"
 
 | Route                                                | Purpose                                                                                                        | Example                                                                |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | /                                                    | Gets the name and version of the service                                                                       | <http://localhost:8000/>                                               |
 | /Service/Info                                        | Same as '/'                                                                                                    | <http://localhost:8000/Service/Info>                                   |
 | /Service/Reset                                       | Clears all cache and memory. Intended for debug and diagnostics.                                               | <http://localhost:8000/Service/Info>                                   |
