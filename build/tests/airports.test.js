@@ -27,7 +27,7 @@ function testGetAirportsByDistance() {
 function testGetAirportFrequenciesByDistance() {
     airports_1.loadFrequencies();
     var foundFrequencies = airports_1.getAirportsFrequenciesWithinDistance(new coordinate_1.Coordinate(-122.15, 48.16), 20.0);
-    assert.strictEqual(Object.keys(foundFrequencies).length, 8);
+    assert.strictEqual(Object.keys(foundFrequencies).length, 7);
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "AWO"), true);
     assert.strictEqual(foundFrequencies["AWO"].length, 2);
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "PAE"), true);

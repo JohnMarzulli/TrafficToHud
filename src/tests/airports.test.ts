@@ -51,7 +51,7 @@ function testGetAirportFrequenciesByDistance() {
         new Coordinate(-122.15, 48.16),
         20.0);
 
-    assert.strictEqual(Object.keys(foundFrequencies).length, 8);
+    assert.strictEqual(Object.keys(foundFrequencies).length, 7);
 
     assert.strictEqual(hasAirportFrequencies(foundFrequencies, "AWO"), true);
     assert.strictEqual(foundFrequencies["AWO"].length, 2);

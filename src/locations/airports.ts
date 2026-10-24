@@ -176,7 +176,7 @@ export function getAirportsFrequenciesWithinDistance(
         const foundDistance = getDistance(location, frequencies[0].coordinates);
 
         if (foundDistance <= distance) {
-            const voiceFreqs: AirportFrequencies[] = getValidFrequencies(frequencies);
+            const voiceFreqs: AirportFrequencies[] = getValidFrequencies(frequencies, ident);
 
             if (voiceFreqs.length > 0) {
                 foundAirportFrequencies[ident] = voiceFreqs;
@@ -188,23 +188,26 @@ export function getAirportsFrequenciesWithinDistance(
 }
 
 function getValidFrequencies(
-    allFreqs: AirportFrequencies[]
+    allFreqs: AirportFrequencies[],
+    ident: string
 ): AirportFrequencies[] {
-    const voiceFreqs: AirportFrequencies[] = [];
-
-    for (const freq of allFreqs) {
-        if (freq.facilityType === 'NAVAID') {
-            continue;
-        }
-
-        if (freq.coordinates.latitude === undefined || freq.coordinates.latitude === null || Number.isNaN(freq.coordinates.latitude)) {
-            continue;
-        }
-
-        voiceFreqs.push(freq);
-    }
+    const frequenciesForStation = allFreqs.filter(freq => ident.localeCompare(freq.facilityId, undefined, { sensitivity: 'accent' }) === 0);
+    const nonNavaidFreqs: AirportFrequencies[] = frequenciesForStation.filter(freq => isUsableFacilityType(freq.facilityType));
+    const voiceFreqs: AirportFrequencies[] = nonNavaidFreqs.filter(freq => isValid(freq.coordinates.latitude));
 
     return voiceFreqs;
+}
+
+function isUsableFacilityType(
+    facilityType: string
+): boolean {
+    return facilityType !== 'NAVAID' && facilityType !== 'TRACON';
+}
+
+function isValid(
+    value: any
+): boolean {
+    return value !== undefined && value !== null && !Number.isNaN(value);
 }
 
 function getCsvDataFileLines(

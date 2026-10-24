@@ -136,7 +136,7 @@ function getAirportsFrequenciesWithinDistance(location, distance) {
     airportFrequencies.forEach(function (frequencies, ident) {
         var foundDistance = distance_1.getDistance(location, frequencies[0].coordinates);
         if (foundDistance <= distance) {
-            var voiceFreqs = getValidFrequencies(frequencies);
+            var voiceFreqs = getValidFrequencies(frequencies, ident);
             if (voiceFreqs.length > 0) {
                 foundAirportFrequencies[ident] = voiceFreqs;
             }
@@ -145,19 +145,17 @@ function getAirportsFrequenciesWithinDistance(location, distance) {
     return foundAirportFrequencies;
 }
 exports.getAirportsFrequenciesWithinDistance = getAirportsFrequenciesWithinDistance;
-function getValidFrequencies(allFreqs) {
-    var voiceFreqs = [];
-    for (var _i = 0, allFreqs_1 = allFreqs; _i < allFreqs_1.length; _i++) {
-        var freq = allFreqs_1[_i];
-        if (freq.facilityType === 'NAVAID') {
-            continue;
-        }
-        if (freq.coordinates.latitude === undefined || freq.coordinates.latitude === null || Number.isNaN(freq.coordinates.latitude)) {
-            continue;
-        }
-        voiceFreqs.push(freq);
-    }
+function getValidFrequencies(allFreqs, ident) {
+    var frequenciesForStation = allFreqs.filter(function (freq) { return ident.localeCompare(freq.facilityId, undefined, { sensitivity: 'accent' }) === 0; });
+    var nonNavaidFreqs = frequenciesForStation.filter(function (freq) { return isUsableFacilityType(freq.facilityType); });
+    var voiceFreqs = nonNavaidFreqs.filter(function (freq) { return isValid(freq.coordinates.latitude); });
     return voiceFreqs;
+}
+function isUsableFacilityType(facilityType) {
+    return facilityType !== 'NAVAID' && facilityType !== 'TRACON';
+}
+function isValid(value) {
+    return value !== undefined && value !== null && !Number.isNaN(value);
 }
 function getCsvDataFileLines(fileShortName) {
     var filePath = path.resolve(__dirname, "../../data/" + fileShortName);
