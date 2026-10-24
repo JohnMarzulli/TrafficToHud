@@ -13,16 +13,17 @@ var coordinate_1 = require("../types/coordinate");
  * @returns A list of any airports within the given radius of the given location.
  */
 function getAirports(req) {
+    var foundAirports = [];
     try {
         // Get the value of the specified parameter
         var distance = getDistanceFromRequest(req);
         var location_1 = getLatLonFromRequest(req);
-        return getAirportsWithinDistance(location_1, distance);
+        foundAirports = getAirportsWithinDistance(location_1, distance);
     }
     catch (error) {
         console.error("Error in getAirports:", error);
-        return [];
     }
+    return foundAirports;
 }
 exports.getAirports = getAirports;
 /**
@@ -31,14 +32,15 @@ exports.getAirports = getAirports;
  * @returns A dictionary with the facility identifier as the key. This indexes to a list of the facility's frequencies.
  */
 function getFrequencies(req) {
+    var foundFrequencies = {};
     try {
         var distance = getDistanceFromRequest(req);
         var location_2 = getLatLonFromRequest(req);
-        return getAirportsFrequenciesWithinDistance(location_2, distance);
+        foundFrequencies = getAirportsFrequenciesWithinDistance(location_2, distance);
     }
     catch (_a) {
-        return {};
     }
+    return foundFrequencies;
 }
 exports.getFrequencies = getFrequencies;
 /**

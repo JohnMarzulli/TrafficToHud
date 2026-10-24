@@ -15,19 +15,21 @@ import { Coordinate } from "../types/coordinate";
  */
 export function getAirports(
     req: Request
-): any {
+): Airport[] {
+    let foundAirports: Airport[] = [];
+
     try {
         // Get the value of the specified parameter
         const distance: number = getDistanceFromRequest(req);
         const location: Coordinate = getLatLonFromRequest(req);
 
-        return getAirportsWithinDistance(location, distance);
+        foundAirports = getAirportsWithinDistance(location, distance);
     }
     catch (error) {
         console.error("Error in getAirports:", error);
-
-        return [];
     }
+
+    return foundAirports;
 }
 
 /**
@@ -37,16 +39,19 @@ export function getAirports(
  */
 export function getFrequencies(
     req: Request
-): any {
+): { [key: string]: AirportFrequencies[]; } {
+    let foundFrequencies: { [key: string]: AirportFrequencies[]; } = {};
+
     try {
         const distance: number = getDistanceFromRequest(req);
         const location: Coordinate = getLatLonFromRequest(req);
 
-        return getAirportsFrequenciesWithinDistance(location, distance);
+        foundFrequencies = getAirportsFrequenciesWithinDistance(location, distance);
     }
     catch {
-        return {};
     }
+
+    return foundFrequencies;
 }
 
 /**

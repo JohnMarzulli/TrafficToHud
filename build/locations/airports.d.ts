@@ -7,13 +7,15 @@ import { Coordinate } from "../types/coordinate";
  * @param req The REST request
  * @returns A list of any airports within the given radius of the given location.
  */
-export declare function getAirports(req: Request): any;
+export declare function getAirports(req: Request): Airport[];
 /**
  * Find any frequencies within the given radius (STATUTE MILES) of the given location
  * @param req
  * @returns A dictionary with the facility identifier as the key. This indexes to a list of the facility's frequencies.
  */
-export declare function getFrequencies(req: Request): any;
+export declare function getFrequencies(req: Request): {
+    [key: string]: AirportFrequencies[];
+};
 /**
  * Returns the expiration dates of the loaded data.
  * @param req the incoming REST request (ignored)
