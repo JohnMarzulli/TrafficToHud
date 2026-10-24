@@ -4,8 +4,8 @@
 // https://flaviocopes.com/node-websockets/
 // https://medium.com/@martin.sikora/node-js-websocket-simple-chat-tutorial-2def3a841b61
 Object.defineProperty(exports, "__esModule", { value: true });
-var http = require("http");
 var debug = require("debug");
+var http = require("http");
 var rest_server_1 = require("./rest-server");
 debug("ts-express:server");
 var DefaultPort = 8000;
@@ -45,11 +45,9 @@ function onError(error) {
         case "EACCES":
             console.error(bind + " requires elevated privileges");
             process.exit(1);
-            break;
         case "EADDRINUSE":
             console.error(bind + " is already in use");
             process.exit(1);
-            break;
         default:
             throw error;
     }
